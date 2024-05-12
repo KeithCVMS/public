@@ -2129,7 +2129,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 Start-Sleep -Seconds 120
 
 }
-
+}
 write-host "Completed"
 
 #write out completion time to tag File
