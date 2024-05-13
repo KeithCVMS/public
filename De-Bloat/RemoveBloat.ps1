@@ -2015,7 +2015,8 @@ foreach ($user in $userprofiles) {
         break
     }
 }
-
+write-host "intunecomplete:$intunecomplete"
+write-host "nonAdminLoggedOn:$nonAdminLoggedOn"
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
 
 
