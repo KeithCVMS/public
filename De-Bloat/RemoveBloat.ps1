@@ -1378,7 +1378,7 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Ce
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -Force}
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -Force}
 
-#Brute-force removal of WildTangent Games HP crap
+#Brute-force removal of WildTangent Games HP crud
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -Force}
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -PathType Container) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -Recurse -Force}
 if (Test-Path -Path "C:\ProgramData\WildTangent" -PathType Container) {Remove-Item -Path "C:\ProgramData\WildTangent" -Recurse -Force}
@@ -1399,6 +1399,20 @@ ForEach ($Key in $Keys) {
 #remove any leftover WildTangent uninstall keys
 $Keys = Get-ChildItem "HKLM:\Software\WOW6432NODE\Microsoft\Windows\CurrentVersion\Uninstall" | get-itemproperty | `
 	where-object {($_.uninstallstring -like '*WildTangent*') -or ($_.uninstallstring -like '*WildGames*')} | select-object pspath
+ForEach ($Key in $Keys) {
+	Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
+}
+
+#This clears any HP preinstalled favorites so that it can be cleanly custommized using custom json or Intune Managed Favorites
+#destination file is C:\Users\userprofile\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks
+#backup file is C:\Users\Default\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks.bak
+# try running from preprov to see if defaultuser gets created "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+
+#Delete the ini file that is involved
+if (Test-Path -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -PathType Leaf) {Remove-Item -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -Force}
+
+#Clear Registry keys
+$Keys = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems" | select-object pspath
 ForEach ($Key in $Keys) {
 	Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 }
