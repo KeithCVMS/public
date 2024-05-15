@@ -139,7 +139,7 @@ Else {
 $DebloatTag = "$DebloatFolder\Debloat.tag"
 If (Test-Path $DebloatTag) {
     write-host "Script has already been run. Exiting"
-	Add-Content -Path "$DebloatTag" -Value "Script has already been run. Exiting"
+	Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 	Exit 0
 }
 Else {
