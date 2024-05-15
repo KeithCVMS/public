@@ -845,25 +845,25 @@ If ($null -ne $WinPackage)
 } 
 
 ##Tweak reg permissions
-invoke-webrequest -uri "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/SetACL.exe" -outfile "C:\Windows\Temp\SetACL.exe"
-C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn setowner -ownr "n:$everyone"
- C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn ace -ace "n:$everyone;p:full"
+#invoke-webrequest -uri "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/SetACL.exe" -outfile "C:\Windows\Temp\SetACL.exe"
+#C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn setowner -ownr "n:$everyone"
+# C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn ace -ace "n:$everyone;p:full"
 
-
-##Stop it coming back
-$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications"
-If (!(Test-Path $registryPath)) { 
-    New-Item $registryPath
-}
-Set-ItemProperty $registryPath ConfigureChatAutoInstall -Value 0
+#
+###Stop it coming back
+#$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications"
+#If (!(Test-Path $registryPath)) { 
+#    New-Item $registryPath
+#}
+#Set-ItemProperty $registryPath ConfigureChatAutoInstall -Value 0
 
 
 ##Unpin it
-$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat"
-If (!(Test-Path $registryPath)) { 
-    New-Item $registryPath
-}
-Set-ItemProperty $registryPath "ChatIcon" -Value 2
+#$registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat"
+#If (!(Test-Path $registryPath)) { 
+#    New-Item $registryPath
+#}
+#Set-ItemProperty $registryPath "ChatIcon" -Value 2
 write-host "Removed Teams Chat"
 ############################################################################################################
 #                                           Windows Backup App                                             #
@@ -1403,15 +1403,15 @@ ForEach ($Key in $Keys) {
 	Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 }
 
-#This clears any HP preinstalled favorites so that it can be cleanly custommized using custom json or Intune Managed Favorites
-#destination file is C:\Users\userprofile\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks
-#backup file is C:\Users\Default\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks.bak
+#This clears any HP preinstalled MsEdge favorites so that it can be cleanly customized using custom json or Intune Managed Favorites
+#destination file is C:\Users\<userprofile>\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks
+#backup file is C:\Users\<userprofile>\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks.bak
 # try running from preprov to see if defaultuser gets created "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 
 #Delete the ini file that is involved
 if (Test-Path -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -PathType Leaf) {Remove-Item -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -Force}
 
-#Clear Registry keys
+#Clear Registry keys to delete the pre-loaded favorites
 $Keys = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems" | select-object pspath
 ForEach ($Key in $Keys) {
 	Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
