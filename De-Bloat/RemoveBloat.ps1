@@ -137,13 +137,21 @@ Else {
 #     if coupled with a companion launching script 
 #This section EXITS if the script has been previouly run.
 $DebloatTag = "$DebloatFolder\Debloat.tag"
+$Env:UserName
+$CurrUser = $Env:UserName
+
 If (Test-Path $DebloatTag) {
-    write-host "Script has already been run. Exiting"
-	Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
-	Exit 0
-}
+	if $curruser -like "default" {
+ 		write-host "Script has already been run. Exiting"
+		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
+		Exit 0
+	}
+	Else {
+		Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+	}
+ }
 Else {
-	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+	Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
@@ -341,8 +349,9 @@ if (!(Test-Path HKU:)) {
 		($WhiteListedApps.replace("```n","" ).replace(" ","").replace("|",",").replace(",,",",") -split ",") + `
 		($NonRemovable.replace("```n","" ).replace(" ","").replace("|",",").replace(",,",",") -split ",")
 
-
 ##Remove bloat
+write-host "Removing Standard Windows Bloat"
+$ErrorActionPreference = 'continue'
 $Bloatware = @(
     #Unnecessary Windows 10/11 AppX Apps
     "Microsoft.549981C3F5F10"
@@ -446,7 +455,7 @@ $Bloatware = $Bloatware | Where-Object { $AllKeepApps -notcontains $_ }
 				Write-host "Package $Bloat not found."
 		}
     }
-
+$ErrorActionPreference = 'silentlycontinue'
 ############################################################################################################
 #                                        Remove Registry Keys                                              #
 #                                                                                                          #
@@ -455,8 +464,7 @@ $Bloatware = $Bloatware | Where-Object { $AllKeepApps -notcontains $_ }
 ##We need to grab all SIDs to remove at user level
 $UserSIDs = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList" | Select-Object -ExpandProperty PSChildName
 
-    
-    #These are the registry keys that it will delete.
+        #These are the registry keys that it will delete.
             
     $Keys = @(
             
@@ -799,7 +807,8 @@ Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage -allusers
     #Windows 11 Customisations
     write-host "Removing Windows 11 Customisations"
     #Remove XBox Game Bar
-    
+    $ErrorActionPreference = 'continue'
+    write-host "Remove Win11 packages"
     $packages = @(
         "Microsoft.XboxGamingOverlay",
         "Microsoft.XboxGameCallableUI",
@@ -809,27 +818,28 @@ Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage -allusers
     )
 
 	#Remove AllKeepApps(whitelist, custom, and nonremovable) from array so that we don't inadvertently remove something that was to be explicitly kept
-	$packages = $packages | Where-Object { $AllKeepApps -notcontains $_ }
+#	$packages = $packages | Where-Object { $AllKeepApps -notcontains $_ }
 
 	foreach ($package in $packages) {   
-        $appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction Continue
-        if ($appPackage) {
-            $appPackage | Remove-AppxProvisionedPackage | out-null
-            Write-Host "Removed Win11 provisioned $package"
-        } else {
+        	$appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction Continue
+        	if ($appPackage) {
+            	$appPackage | Remove-AppxProvisionedPackage | out-null
+            	Write-Host "Removed Win11 provisioned $package"
+        	} else {
 			Write-Host "Win11 provisioned $package not found"
 		}
 
-        $appPackage = Get-AppxPackage -allusers $package -ErrorAction Continue
-        if ($appPackage) {
-            Remove-AppxPackage -Package $appPackage.PackageFullName -AllUsers | out-null
-            Write-Host "Removed Win11 $package"
-        } else {
+        	$appPackage = Get-AppxPackage -allusers $package -ErrorAction Continue
+        	if ($appPackage) {
+            	Remove-AppxPackage -Package $appPackage.PackageFullName -AllUsers | out-null
+            	Write-Host "Removed Win11 $package"
+        	} else {
 			Write-Host "Win11 $package not found"
 		}
-    }
+    	}
 
    #Remove Teams Chat
+write-host "Remove Teams personal"
 $MSTeams = "MicrosoftTeams"
 
 $WinPackage = Get-AppxPackage -allusers | Where-Object {$_.Name -eq $MSTeams}
@@ -864,7 +874,9 @@ If (!(Test-Path $registryPath)) {
     New-Item $registryPath
 }
 Set-ItemProperty $registryPath "ChatIcon" -Value 2
+
 write-host "Removed Teams Chat"
+$ErrorActionPreference = 'silentlycontinue'
 ############################################################################################################
 #                                           Windows Backup App                                             #
 #                                                                                                          #
