@@ -824,40 +824,40 @@ Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage -allusers
         	$appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction Continue
         	if ($appPackage) {
             	$appPackage | Remove-AppxProvisionedPackage | out-null
-            	Write-Host "Removed Win11 provisioned $package"
+            	Write-Host "Removed Win11 ProvisionedPackage $package"
         	} else {
-			Write-Host "Win11 provisioned $package not found"
+			Write-Host "Win11 ProvisionedPackage $package not found"
 		}
 
         	$appPackage = Get-AppxPackage -allusers $package -ErrorAction Continue
         	if ($appPackage) {
             	Remove-AppxPackage -Package $appPackage.PackageFullName -AllUsers | out-null
-            	Write-Host "Removed Win11 $package"
+            	Write-Host "Removed Win11 Package $package"
         	} else {
-			Write-Host "Win11 $package not found"
+			Write-Host "Win11 Package $package not found"
 		}
     	}
 
-   #Remove Teams Chat
+#Remove Teams Chat
 write-host "Remove Teams personal"
 $MSTeams = "MicrosoftTeams"
 
 $WinPackage = Get-AppxPackage -allusers | Where-Object {$_.Name -eq $MSTeams}
-$ProvisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $WinPackage }
-If ($null -ne $ProvisionedPackage) 
-{
+$ProvisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $MSTeams }
+If ($null -ne $ProvisionedPackage) {
+	write-host "removing provisioned $provisionedPackage"
     Remove-AppxProvisionedPackage -Online -Packagename $ProvisionedPackage.Packagename
 }
 
-If ($null -ne $WinPackage) 
-{
+If ($null -ne $WinPackage) {
+	write-host "removing package $Winpackage"
     Remove-AppxPackage -Package $WinPackage.PackageFullName -AllUsers
 } 
 
 ##Tweak reg permissions
 invoke-webrequest -uri "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/SetACL.exe" -outfile "C:\Windows\Temp\SetACL.exe"
 C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn setowner -ownr "n:$everyone"
- C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn ace -ace "n:$everyone;p:full"
+C:\Windows\Temp\SetACL.exe -on "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -ot reg -actn ace -ace "n:$everyone;p:full"
 
 #
 ##Stop it coming back
@@ -866,7 +866,6 @@ If (!(Test-Path $registryPath)) {
     New-Item $registryPath
 }
 #Set-ItemProperty $registryPath ConfigureChatAutoInstall -Value 0
-
 
 ##Unpin it
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat"
