@@ -2125,30 +2125,29 @@ if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
 	}
 
 	##Remove pro versions of Office so that O365 deployment from Intune is cleaner
-	write-host "removing Pro Ofice"
 	if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 		$OSInfo = Get-WmiObject -Class Win32_OperatingSystem
 		$AllLanguages = $OSInfo.MUILanguages
 
 		write-host "Check for and remove OfficePro retail"
 		$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-		foreach($Language in $AllLanguages){
+		write "removing office"
+  		foreach($Language in $AllLanguages){
 			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365ProPlusRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
 			Start-Sleep -Seconds 5
 		}
 
 		$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-		foreach($Language in $AllLanguages){
+		write "removing Onenote"
+  		foreach($Language in $AllLanguages){
 			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteProPlusRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
 			Start-Sleep -Seconds 5
 		}
-
-
 	}
 	## The Office removals seems to need time to complete when pre-provisioning before the PC gets rebooted
 	Start-Sleep -Seconds 120
 
-write-host "Anything else removal complete"
+	write-host "Anything else removal complete"
 
 }
 write-host "Completed"
