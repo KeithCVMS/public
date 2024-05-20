@@ -118,7 +118,6 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #no errors throughout
 $ErrorActionPreference = 'SilentlyContinue'
 
-
 #Create Folder
 $DebloatFolder = "C:\ProgramData\Debloat"
 If (Test-Path $DebloatFolder) {
@@ -135,24 +134,25 @@ Else {
 #The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
 #It can be used in a similar method as the detection mechanism for Win32apps in Intune
 #     if coupled with a companion launching script 
-#This section EXITS if the script has been previouly run.
+#This section EXITS if the script has been previouly run in a preprov environment 
+#     (based on the default user running the script).
 $DebloatTag = "$DebloatFolder\Debloat.tag"
 
 $Env:UserName
 $CurrUser = $Env:UserName
 
 If (Test-Path $DebloatTag) {
-	if ($curruser -like "default") {
+	if ($CurrUser -like "*default*") {
  		write-host "Script has already been run. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 		Exit 0
 	}
 	Else {
-		Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+		Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
 	}
- }
+}
 Else {
-	Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
@@ -160,7 +160,6 @@ Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
 ##Switch on locale to set variables
-## Switch on locale to set variables
 switch ($locale) {
     "ar-SA" {
         $everyone = "الجميع"
@@ -311,8 +310,8 @@ switch ($locale) {
         $builtin = "Builtin"
     }
 }
- 
 
+ 
 #Define PS-Drives for non-default registry paths if not present on system
 if (!(Test-Path HKCR:)) {
 	New-PSDrive -PSProvider Registry -Name HKCR -Root HKEY_CLASSES_ROOT | Out-Null
@@ -354,7 +353,6 @@ $AllKeepApps = ($customwhitelist -split ",") + `
 
 ##Remove bloat
 write-host "Removing Standard Windows Bloat"
-$ErrorActionPreference = 'continue'
 $Bloatware = @(
     #Unnecessary Windows 10/11 AppX Apps
     "Microsoft.549981C3F5F10"
@@ -459,7 +457,6 @@ foreach ($Bloat in $Bloatware) {
 			Write-host "Package $Bloat not found."
 	}
 }
-$ErrorActionPreference = 'silentlycontinue'
 ############################################################################################################
 #                                        Remove Registry Keys                                              #
 #                                                                                                          #
@@ -810,7 +807,6 @@ Get-ScheduledTask  DmClientOnScenarioDownload | Disable-ScheduledTask -ErrorActi
 #Windows 11 Customisations
 write-host "Removing Windows 11 Customisations"
 #Remove XBox Game Bar
-$ErrorActionPreference = 'continue'
 write-host "Remove Win11 packages"
 $packages = @(
 	"Microsoft.XboxGamingOverlay",
@@ -868,7 +864,7 @@ $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications"
 If (!(Test-Path $registryPath)) { 
     New-Item $registryPath
 }
-#Set-ItemProperty $registryPath ConfigureChatAutoInstall -Value 0
+Set-ItemProperty $registryPath ConfigureChatAutoInstall -Value 0
 
 ##Unpin it
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Chat"
@@ -878,7 +874,6 @@ If (!(Test-Path $registryPath)) {
 Set-ItemProperty $registryPath "ChatIcon" -Value 2
 
 write-host "Removed Teams Chat"
-$ErrorActionPreference = 'silentlycontinue'
 ############################################################################################################
 #                                           Windows Backup App                                             #
 #                                                                                                          #
@@ -1036,7 +1031,6 @@ if ($version -like "*Windows 11*") {
     write-host "Removing Current Layout"
     If(Test-Path "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml") {
 		Remove-Item "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml"
-    
     }
 $blankjson = @'
 { 
