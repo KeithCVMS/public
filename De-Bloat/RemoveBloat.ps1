@@ -161,7 +161,7 @@ $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
 ##Switch on locale to set variables
 switch ($locale) {
-    "ar-SA" {
+<#     "ar-SA" {
         $everyone = "الجميع"
         $builtin = "مدمج"
     }
@@ -185,7 +185,7 @@ switch ($locale) {
         $everyone = "Όλοι"
         $builtin = "Ενσωματωμένο"
     }
-    "en-US" {
+ #>    "en-US" {
         $everyone = "Everyone"
         $builtin = "Builtin"
     }    
@@ -193,7 +193,7 @@ switch ($locale) {
         $everyone = "Everyone"
         $builtin = "Builtin"
     }
-    "es-ES" {
+<#     "es-ES" {
         $everyone = "Todos"
         $builtin = "Incorporado"
     }
@@ -305,11 +305,12 @@ switch ($locale) {
         $everyone = "所有人"
         $builtin = "內建"
     }
-    default {
+ #>    default {
         $everyone = "Everyone"
         $builtin = "Builtin"
     }
 }
+
 
  
 #Define PS-Drives for non-default registry paths if not present on system
