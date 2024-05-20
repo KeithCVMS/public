@@ -311,7 +311,6 @@ switch ($locale) {
     }
 }
 
-
  
 #Define PS-Drives for non-default registry paths if not present on system
 if (!(Test-Path HKCR:)) {
