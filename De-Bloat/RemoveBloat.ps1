@@ -142,7 +142,7 @@ $Env:UserName
 $CurrUser = $Env:UserName
 
 If (Test-Path $DebloatTag) {
-	if $curruser -like "default" {
+	if ($curruser -like "default") {
  		write-host "Script has already been run. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 		Exit 0
@@ -311,6 +311,7 @@ switch ($locale) {
         $builtin = "Builtin"
     }
 }
+ 
 
 #Define PS-Drives for non-default registry paths if not present on system
 if (!(Test-Path HKCR:)) {
@@ -324,6 +325,7 @@ if (!(Test-Path HKU:)) {
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
 ############################################################################################################
+write-host "CustWhite: $customwhitelist"
 
 #Removes AppxPackages
 $WhitelistedApps = 'Microsoft.WindowsNotepad|Microsoft.CompanyPortal|Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
