@@ -2132,28 +2132,13 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 
 }
 
-##Remove home versions of Office
+##Remove pro versions of Office
 $OSInfo = Get-WmiObject -Class Win32_OperatingSystem
 $AllLanguages = $OSInfo.MUILanguages
 
 
 $ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
 	write-host "removing Home Office"
-
-	$OSInfo = Get-WmiObject -Class Win32_OperatingSystem
-	$AllLanguages = $OSInfo.MUILanguages
-
-	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-	foreach($Language in $AllLanguages){
-		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365HomePremRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-		Start-Sleep -Seconds 5
-	}
-
-	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-	foreach($Language in $AllLanguages){
-		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteFreeRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-		Start-Sleep -Seconds 5
-	}
 
 	##Remove pro versions of Office so that O365 deployment from Intune is cleaner
 	if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
@@ -2175,6 +2160,19 @@ $ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\Off
 			Start-Sleep -Seconds 5
 		}
 	}
+##Remove home versions of Office
+
+ foreach($Language in $AllLanguages){
+		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365HomePremRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
+		Start-Sleep -Seconds 5
+	}
+
+	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
+	foreach($Language in $AllLanguages){
+		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteFreeRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
+		Start-Sleep -Seconds 5
+	}
+
 	## The Office removals seems to need time to complete when pre-provisioning before the PC gets rebooted
 	Start-Sleep -Seconds 120
 
