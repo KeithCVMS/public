@@ -2135,49 +2135,23 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 
 }
 
-##Remove pro versions of Office
+##Remove all pre-installed versions of Office
 $OSInfo = Get-WmiObject -Class Win32_OperatingSystem
 $AllLanguages = $OSInfo.MUILanguages
 
+### Download SaRa Office UNinstall script ###
+write-host "Downloading SaRa Ofice Remooval Tool"
+# Download Source
+$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
 
-$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-	write-host "removing Home Office"
+# Set Save Directory
+$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
 
-	##Remove pro versions of Office so that O365 deployment from Intune is cleaner
-	if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
-		$OSInfo = Get-WmiObject -Class Win32_OperatingSystem
-		$AllLanguages = $OSInfo.MUILanguages
+#Download the file
+Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 
-		write-host "Check for and remove OfficePro retail"
-		$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-		write "removing office"
-  		foreach($Language in $AllLanguages){
-			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365ProPlusRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-			Start-Sleep -Seconds 5
-		}
-
-		$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-		write "removing Onenote"
-  		foreach($Language in $AllLanguages){
-			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteProPlusRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-			Start-Sleep -Seconds 5
-		}
-	}
-##Remove home versions of Office
-
- foreach($Language in $AllLanguages){
-		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365HomePremRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-		Start-Sleep -Seconds 5
-	}
-
-	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-	foreach($Language in $AllLanguages){
-		Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteFreeRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-		Start-Sleep -Seconds 5
-	}
-
-	## The Office removals seems to need time to complete when pre-provisioning before the PC gets rebooted
-	Start-Sleep -Seconds 120
+#Run the SaraRemoval script
+invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
 
 	write-host "Anything else removal complete"
 
