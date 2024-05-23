@@ -141,10 +141,10 @@ Else {
 $DebloatTag = "$DebloatFolder\Debloat.tag"
 
 $Env:UserName
-$CurrUser = $Env:UserName
+$CurrProf = $Env:UserName
 
 If (Test-Path $DebloatTag) {
-	if ($CurrUser -like "*default*") {
+	if ($CurrProf -like "*default*") {
  		write-host "Script has already been run. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 		Exit 0
@@ -158,9 +158,7 @@ Else {
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
-write-host "CurrUser: $CurrUser"
-
-
+Get-ChildItem Env:
 
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
