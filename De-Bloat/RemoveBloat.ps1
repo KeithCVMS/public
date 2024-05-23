@@ -158,6 +158,9 @@ Else {
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
+write-host "CurrUser: $CurrUser"
+
+
 
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
