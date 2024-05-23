@@ -2132,9 +2132,9 @@ write-host "Removing Chrome"
 Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
 }
 
-
 }
 
+if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 ##Remove all pre-installed versions of Office
 $OSInfo = Get-WmiObject -Class Win32_OperatingSystem
 $AllLanguages = $OSInfo.MUILanguages
@@ -2152,8 +2152,8 @@ Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 
 #Run the SaraRemoval script
 invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
-
-	write-host "Anything else removal complete"
+}
+write-host "Anything else removal complete"
 
 }
 
