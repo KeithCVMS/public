@@ -2134,24 +2134,21 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 
 }
 
+##Remove any pre-installed versions of Office
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
-##Remove all pre-installed versions of Office
-$OSInfo = Get-WmiObject -Class Win32_OperatingSystem
-$AllLanguages = $OSInfo.MUILanguages
+	write-host "removing all Office versions"
+	### Download SaRa Office UNinstall script ###
+	write-host "Downloading SaRa Ofice Remooval Tool"
+	
+	# Download Source
+	$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
+	# Set Save Directory
+	$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
+	#Download the file
+	Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 
-### Download SaRa Office UNinstall script ###
-write-host "Downloading SaRa Ofice Remooval Tool"
-# Download Source
-$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
-
-# Set Save Directory
-$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
-
-#Download the file
-Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
-
-#Run the SaraRemoval script
-invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
+	#Run the SaraRemoval script
+	invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
 }
 write-host "Anything else removal complete"
 
