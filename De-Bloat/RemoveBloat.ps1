@@ -141,10 +141,10 @@ Else {
 $DebloatTag = "$DebloatFolder\Debloat.tag"
 
 $Env:UserName
-$CurrProf = $Env:UserName
+$CurrProf = $Env:Userprofile
 
 If (Test-Path $DebloatTag) {
-	if ($CurrProf -like "*default*") {
+	if ($CurrProf -like "*systemprofile*") {
  		write-host "Script has already been run. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 		Exit 0
@@ -2044,7 +2044,8 @@ foreach ($user in $userprofiles) {
         break
     }
 }
-
+write-host "intunecomplete:$intunecomplete"
+write-host "nonadmin:$nonAdminLoggedOn"
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
 
 
@@ -2133,7 +2134,9 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 }
 
 ##Remove any pre-installed versions of Office
-if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
+write-host "Oficecheck"
+test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe'
+#if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 	write-host "removing all Office versions"
 	### Download SaRa Office UNinstall script ###
 	write-host "Downloading SaRa Ofice Remooval Tool"
@@ -2147,7 +2150,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 	#Run the SaraRemoval script
 	invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
-}
+#}
 write-host "Anything else removal complete"
 
 }
