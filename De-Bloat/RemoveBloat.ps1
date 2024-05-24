@@ -158,7 +158,7 @@ Else {
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
-Get-ChildItem Env:
+write-host "CurrProf:$CurrProf"
 
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
