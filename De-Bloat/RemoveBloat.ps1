@@ -159,7 +159,9 @@ Else {
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 write-host "CurrProf:$CurrProf"
-
+	if ($CurrProf -like "*systemprofile*") {
+		write-host "preprov run"
+	}
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
 ##Switch on locale to set variables
@@ -2136,7 +2138,7 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 ##Remove any pre-installed versions of Office
 write-host "Oficecheck"
 test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe'
-#if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
+if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 	write-host "removing all Office versions"
 	### Download SaRa Office UNinstall script ###
 	write-host "Downloading SaRa Ofice Remooval Tool"
@@ -2149,8 +2151,8 @@ test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\Offic
 	Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 
 	#Run the SaraRemoval script
-	invoke-expression -command .\ExecuteSaraOfficeUninstall.ps1 -ErrorAction Continue
-#}
+	invoke-expression -command $destination -ErrorAction Continue
+}
 write-host "Anything else removal complete"
 
 }
