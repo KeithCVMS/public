@@ -415,20 +415,30 @@ write-host "CustWhite: $customwhitelist"
     $appstoignore = $WhitelistedApps += $NonRemovable
 
 
-    write-host "Removing packages by default"
+$ErrorActionPreference = 'Continue'
+write-host "Removing packages by default"
+write-host " "
 	get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
-	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore}
+	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname
 	ForEach ($Ppkg in $PpkgRemove) {
-            Write-Host "Removing Default provisioned package:   $Ppkg"
+            Write-Host "Removing Default provisioned package:   [$($Ppkg.DisplayName)]"
  			$Ppkg | Remove-AppxProvisionedPackage | out-null
 	}		
-	get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
-    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore}
+write-host " "
+		get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
+write-host " "
+write-host "************************************************************************************"
+write-host " "
+
+get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
+    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} |sort-object name
 	ForEach ($Apkg in $ApkgRemove) {
             Write-Host "Removing Default Appx package:   $Apkg"
  			$Apkg | Remove-AppxProvisionedPackage -Allusers | out-null
 	}		
-
+write-host " "
+get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
+$ErrorActionPreference = 'SilentlyContinue'
 
 ##Remove bloat
 $Bloatware = @(
