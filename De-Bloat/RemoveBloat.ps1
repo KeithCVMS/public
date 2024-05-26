@@ -17,7 +17,7 @@
 .OUTPUTS
 C:\ProgramData\Debloat\Debloat.log
 .NOTES
-  Version:        4.2.23
+  Version:        4.2.25
   Author:         Andrew Taylor
   Twitter:        @AndrewTaylor_2
   WWW:            andrewstaylor.com
@@ -90,6 +90,8 @@ C:\ProgramData\Debloat\Debloat.log
   Change 02/05/2024 - Fixed notlike to notin
   Change 03/05/2024 - Change $uninstallprograms
   Change 19/05/2024 - Disabled feeds on Win11
+  Change 21/05/2024 - Added QuickAssist to removal after security issues
+  Change 25/05/2024 - Whitelist array fix
 N/A
 #>
 
@@ -158,10 +160,12 @@ Else {
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
+
 write-host "CurrProf:$CurrProf"
-	if ($CurrProf -like "*systemprofile*") {
-		write-host "preprov run"
-	}
+
+if ($CurrProf -like "*systemprofile*") {
+	write-host "preprov run"
+}
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
 ##Switch on locale to set variables
@@ -332,36 +336,90 @@ if (!(Test-Path HKU:)) {
 write-host "CustWhite: $customwhitelist"
 
     #Removes AppxPackages
-    $WhitelistedApps = 'Microsoft.WindowsNotepad|Microsoft.CompanyPortal|Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
-    |Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|Framework|`
-    Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry|Slack'
+    $WhitelistedApps = @(
+        'Microsoft.WindowsNotepad',
+        'Microsoft.CompanyPortal',
+        'Microsoft.ScreenSketch',
+        'Microsoft.Paint3D',
+        'Microsoft.WindowsCalculator',
+        'Microsoft.WindowsStore',
+        'Microsoft.Windows.Photos',
+        'CanonicalGroupLimited.UbuntuonWindows',
+        'Microsoft.MicrosoftStickyNotes',
+        'Microsoft.MSPaint',
+        'Microsoft.WindowsCamera',
+        '.NET',
+        'Framework',
+        'Microsoft.HEIFImageExtension',
+        'Microsoft.ScreenSketch',
+        'Microsoft.StorePurchaseApp',
+        'Microsoft.VP9VideoExtensions',
+        'Microsoft.WebMediaExtensions',
+        'Microsoft.WebpImageExtension',
+        'Microsoft.DesktopAppInstaller',
+        'WindSynthBerry',
+        'MIDIBerry',
+        'Slack'
+    )
     ##If $customwhitelist is set, split on the comma and add to whitelist
- #This is left in for existing code compatability that require the delimited list rather than the $AllKeepApps array defined below
-   if ($customwhitelist) {
+    if ($customwhitelist) {
         $customWhitelistApps = $customwhitelist -split ","
-        $WhitelistedApps += "|"
-        $WhitelistedApps += $customWhitelistApps -join "|"
+        foreach ($whitelistapp in $customwhitelistapps) {
+            ##Add to the array
+            $WhitelistedApps += $whitelistapp
+        }
     }
     
     #NonRemovable Apps that where getting attempted and the system would reject the uninstall, speeds up debloat and prevents 'initalizing' overlay when removing apps
-    $NonRemovable = '1527c705-839a-4832-9118-54d4Bd6a0c89|c5e2524a-ea46-4f67-841f-6a9465d9d515|E2A4F912-2574-4A75-9BB0-0D023378592B|F46D4000-FD22-4DB4-AC8E-4E1DDDE828FE|InputApp|Microsoft.AAD.BrokerPlugin|Microsoft.AccountsControl|`
-    Microsoft.BioEnrollment|Microsoft.CredDialogHost|Microsoft.ECApp|Microsoft.LockApp|Microsoft.MicrosoftEdgeDevToolsClient|Microsoft.MicrosoftEdge|Microsoft.PPIProjection|Microsoft.Win32WebViewHost|Microsoft.Windows.Apprep.ChxApp|`
-    Microsoft.Windows.AssignedAccessLockApp|Microsoft.Windows.CapturePicker|Microsoft.Windows.CloudExperienceHost|Microsoft.Windows.ContentDeliveryManager|Microsoft.Windows.Cortana|Microsoft.Windows.NarratorQuickStart|`
-    Microsoft.Windows.ParentalControls|Microsoft.Windows.PeopleExperienceHost|Microsoft.Windows.PinningConfirmationDialog|Microsoft.Windows.SecHealthUI|Microsoft.Windows.SecureAssessmentBrowser|Microsoft.Windows.ShellExperienceHost|`
-    Microsoft.Windows.XGpuEjectDialog|Microsoft.XboxGameCallableUI|Windows.CBSPreview|windows.immersivecontrolpanel|Windows.PrintDialog|Microsoft.XboxGameCallableUI|Microsoft.VCLibs.140.00|Microsoft.Services.Store.Engagement|Microsoft.UI.Xaml.2.0|*Nvidia*'
-    Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps -and $_.PackageName -NotMatch $NonRemovable} | Remove-AppxProvisionedPackage -Online
-    Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps -and $_.Name -NotMatch $NonRemovable} | Remove-AppxPackage
-    Get-AppxPackage -allusers | Where-Object {$_.Name -NotMatch $WhitelistedApps -and $_.Name -NotMatch $NonRemovable} | Remove-AppxPackage
+    $NonRemovable = @(
+        '1527c705-839a-4832-9118-54d4Bd6a0c89',
+        'c5e2524a-ea46-4f67-841f-6a9465d9d515',
+        'E2A4F912-2574-4A75-9BB0-0D023378592B',
+        'F46D4000-FD22-4DB4-AC8E-4E1DDDE828FE',
+        'InputApp',
+        'Microsoft.AAD.BrokerPlugin',
+        'Microsoft.AccountsControl',
+        'Microsoft.BioEnrollment',
+        'Microsoft.CredDialogHost',
+        'Microsoft.ECApp',
+        'Microsoft.LockApp',
+        'Microsoft.MicrosoftEdgeDevToolsClient',
+        'Microsoft.MicrosoftEdge',
+        'Microsoft.PPIProjection',
+        'Microsoft.Win32WebViewHost',
+        'Microsoft.Windows.Apprep.ChxApp',
+        'Microsoft.Windows.AssignedAccessLockApp',
+        'Microsoft.Windows.CapturePicker',
+        'Microsoft.Windows.CloudExperienceHost',
+        'Microsoft.Windows.ContentDeliveryManager',
+        'Microsoft.Windows.Cortana',
+        'Microsoft.Windows.NarratorQuickStart',
+        'Microsoft.Windows.ParentalControls',
+        'Microsoft.Windows.PeopleExperienceHost',
+        'Microsoft.Windows.PinningConfirmationDialog',
+        'Microsoft.Windows.SecHealthUI',
+        'Microsoft.Windows.SecureAssessmentBrowser',
+        'Microsoft.Windows.ShellExperienceHost',
+        'Microsoft.Windows.XGpuEjectDialog',
+        'Microsoft.XboxGameCallableUI',
+        'Windows.CBSPreview',
+        'windows.immersivecontrolpanel',
+        'Windows.PrintDialog',
+        'Microsoft.VCLibs.140.00',
+        'Microsoft.Services.Store.Engagement',
+        'Microsoft.UI.Xaml.2.0',
+        '*Nvidia*'
+    )
 
-#Combine both whitelists and nonremovable and convert into a single keep array
-# AllKeepApps becomes a complete array of everything that should not be removed or attempted and is used later on in the script
-$AllKeepApps = ($customwhitelist -split ",") + `
-	($WhiteListedApps.replace("```n","" ).replace(" ","").replace("|",",").replace(",,",",") -split ",") + `
-	($NonRemovable.replace("```n","" ).replace(" ","").replace("|",",").replace(",,",",") -split ",")
+    ##Combine the two arrays
+    $appstoignore = $WhitelistedApps += $NonRemovable
+
+
+    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
+    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
 
 
 ##Remove bloat
-write-host "Removing Standard Windows Bloat"
 $Bloatware = @(
     #Unnecessary Windows 10/11 AppX Apps
     "Microsoft.549981C3F5F10"
@@ -432,6 +490,7 @@ $Bloatware = @(
     "MicrosoftCorporationII.MicrosoftFamily"
     "C27EB4BA.DropboxOEM*"
     "*DevHome*"
+    "MicrosoftCorporationII.QuickAssist"
     #Optional: Typically not removed but you can if you need to for some reason
     #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
     #"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
@@ -442,29 +501,29 @@ $Bloatware = @(
     #"*Microsoft.WindowsCalculator*"
     #"*Microsoft.WindowsStore*"
 )
-##Use $AllKeepApps to remove all whitelist (standard, custom and nonremovable) 
-## from bloatlist so we don't delete packages that are explicitly whitelisted
-## this replaces the delimited list
-$Bloatware = $Bloatware | Where-Object { $AllKeepApps -notcontains $_ }
+##remove appstoignore from array
+    $Bloatware = $Bloatware | Where-Object { $appstoignore -notcontains $_ }
     
 
     foreach ($Bloat in $Bloatware) {
         
-	$DebloatPkg = Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue 
-	If ($DebloatPkg) {
-		$DebloatPkg | Remove-AppxProvisionedPackage -Online | out-null
-		Write-host "Removed provisioned package for $Bloat"
-	} else {
-		Write-host "Provisioned package for $Bloat not found"
-	}
+        if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue) {
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
+            Write-Host "Removed provisioned package for $Bloat."
+        } else {
+            Write-Host "Provisioned package for $Bloat not found."
+        }
 
-	$DebloatPkg = Get-AppxPackage -Allusers -Name $Bloat -ErrorAction SilentlyContinue
-	If ($DebloatPkg) {
-		$DebloatPkg | Remove-AppxPackage -AllUsers | out-null
-		Write-host "Removed package $Bloat"
-	} else {
-			Write-host "Package $Bloat not found."
-	}
+        if (Get-AppxPackage -Name $Bloat -ErrorAction SilentlyContinue) {
+            Get-AppxPackage -allusers -Name $Bloat | Remove-AppxPackage -AllUsers
+            Write-Host "Removed $Bloat."
+        } else {
+            Write-Host "$Bloat not found."
+        }
+
+
+
+        
 
     }
 ############################################################################################################
@@ -767,7 +826,7 @@ else {
 }
 
 ##Kill Cortana again
-Get-AppxPackage - allusers Microsoft.549981C3F5F10 | Remove AppxPackage -allusers
+Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove AppxPackage -allusers
     
 ############################################################################################################
 #                                        Remove Scheduled Tasks                                            #
@@ -827,26 +886,25 @@ Get-AppxPackage - allusers Microsoft.549981C3F5F10 | Remove AppxPackage -alluser
         "*getstarted*",
         "Microsoft.Windows.ParentalControls"
     )
-
-#Remove AllKeepApps(whitelist, custom, and nonremovable) from array so that we don't inadvertently remove something that was to be explicitly kept
-$packages = $packages | Where-Object { $AllKeepApps -notcontains $_ }
+    ##Remove appstoignore from array
+    $packages = $packages | Where-Object { $appstoignore -notcontains $_ }
     
 
     foreach ($package in $packages) {
-		$appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction Continue
+ 		$appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction SilentlyContinue
 		if ($appPackage) {
 			$appPackage | Remove-AppxProvisionedPackage | out-null
 			Write-Host "Removed Win11 ProvisionedPackage $package"
 		} else {
-		Write-Host "Win11 ProvisionedPackage $package not found"
-	}
+			Write-Host "Win11 ProvisionedPackage $package not found"
+		}
 
-		$appPackage = Get-AppxPackage -allusers $package -ErrorAction Continue
-		if ($appPackage) {
-			Remove-AppxPackage -Package $appPackage.PackageFullName -AllUsers | out-null
-			Write-Host "Removed Win11 Package $package"
+       $appPackage = Get-AppxPackage -allusers $package -ErrorAction SilentlyContinue
+        if ($appPackage) {
+            Remove-AppxPackage -Package $appPackage.PackageFullName -AllUsers
+            Write-Host "Removed $package"
 		} else {
-		Write-Host "Win11 Package $package not found"
+			Write-Host "Win11 Package $package not found"
         }
     }
 
@@ -855,15 +913,17 @@ write-host "Remove Teams personal"
 $MSTeams = "MicrosoftTeams"
 
 $WinPackage = Get-AppxPackage -allusers | Where-Object {$_.Name -eq $MSTeams}
-$ProvisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $WinPackage }
-If ($null -ne $ProvisionedPackage) {
+$ProvisionedPackage = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -eq $MSTeams }
+If ($null -ne $ProvisionedPackage) 
+{
 	write-host "removing provisioned $provisionedPackage"
-    Remove-AppxProvisionedPackage -Online -Packagename $ProvisionedPackage.Packagename
+    Remove-AppxProvisionedPackage -online -Packagename $ProvisionedPackage.Packagename -AllUsers
 }
 
-If ($null -ne $WinPackage) {
+If ($null -ne $WinPackage) 
+{
 	write-host "removing package $Winpackage"
-    Remove-AppxPackage -Package $WinPackage.PackageFullName -AllUsers
+    Remove-AppxPackage  -Package $WinPackage.PackageFullName -AllUsers
 } 
 
 ##Tweak reg permissions
@@ -1317,68 +1377,70 @@ $UninstallPrograms = @(
     $HPWhitelistedApps = @(
 )
 
-	#Add AllKeeplist(white, custom, nonrem) to HPwhitelist
+##Add apptoignore to $HPWhitelistedApps
 	#This ensures that we don't inadvertently remove specifically whitelisted or nonremovables
-	$HPWhitelistedApps = $HPWhitelistedApps + $AllKeepApps
+	$HPWhitelistedApps = $HPWhitelistedApps + $appstoignore
 
 $UninstallPrograms = $UninstallPrograms | Where-Object{$HPWhitelistedApps -notcontains $_}
 
 $HPidentifier = "AD2F1837"
 
-	$ProvisionedPackages = Get-AppxProvisionedPackage -Online | Where-Object {(($UninstallPrograms -contains $_.DisplayName) -or ($_.DisplayName -like "*$HPidentifier*")) -and ($_.DisplayName -notin $HPWhitelistedApps)}
+$ProvisionedPackages = Get-AppxProvisionedPackage -Online | Where-Object {(($UninstallPrograms -contains $_.DisplayName) -or ($_.DisplayName -like "*$HPidentifier*")) -and ($_.DisplayName -notin $HPWhitelistedApps)}
 
-	$InstalledPackages = Get-AppxPackage -AllUsers | Where-Object {(($UninstallPrograms -contains $_.Name) -or ($_.Name -like "*$HPidentifier*")) -and ($_.Name -notin $HPWhitelistedApps)}
+$InstalledPackages = Get-AppxPackage -AllUsers | Where-Object {(($UninstallPrograms -contains $_.Name) -or ($_.Name -like "*$HPidentifier*")) -and ($_.Name -notin $HPWhitelistedApps)}
 
-	$InstalledPrograms = $allstring | Where-Object {$UninstallPrograms -contains $_.Name -and $_.Name -notin $HPWhitelistedApps}
+$InstalledPrograms = $allstring | Where-Object {$UninstallPrograms -contains $_.Name -and $_.Name -notin $HPWhitelistedApps}
 
 # Remove provisioned packages first
-	ForEach ($ProvPackage in $ProvisionedPackages) {
-		Write-Host -Object "Attempting to remove provisioned package: [$($ProvPackage.DisplayName)]..."
+ForEach ($ProvPackage in $ProvisionedPackages) {
 
-		Try {
-			$Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -ErrorAction Stop
-			Write-Host -Object "Successfully removed provisioned package: [$($ProvPackage.DisplayName)]"
-		}
-		Catch {Write-Warning -Message "Failed to remove provisioned package: [$($ProvPackage.DisplayName)]"}
-	}
+    Write-Host -Object "Attempting to remove provisioned package: [$($ProvPackage.DisplayName)]..."
 
-	# Remove appx packages
-	ForEach ($AppxPackage in $InstalledPackages) {
-		Write-Host -Object "Attempting to remove Appx package: [$($AppxPackage.Name)]..."
+    Try {
+        $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -ErrorAction Stop
+        Write-Host -Object "Successfully removed provisioned package: [$($ProvPackage.DisplayName)]"
+    }
+    Catch {Write-Warning -Message "Failed to remove provisioned package: [$($ProvPackage.DisplayName)]"}
+}
 
-		Try {
-			$Null = Remove-AppxPackage -Package $AppxPackage.PackageFullName -AllUsers -ErrorAction Stop
-			Write-Host -Object "Successfully removed Appx package: [$($AppxPackage.Name)]"
-		}
-		Catch {Write-Warning -Message "Failed to remove Appx package: [$($AppxPackage.Name)]"}
-	}
+# Remove appx packages
+ForEach ($AppxPackage in $InstalledPackages) {
+                                            
+    Write-Host -Object "Attempting to remove Appx package: [$($AppxPackage.Name)]..."
 
-	# Remove installed programs
-	$InstalledPrograms | ForEach-Object {
+    Try {
+        $Null = Remove-AppxPackage -Package $AppxPackage.PackageFullName -AllUsers -ErrorAction Stop
+        Write-Host -Object "Successfully removed Appx package: [$($AppxPackage.Name)]"
+    }
+    Catch {Write-Warning -Message "Failed to remove Appx package: [$($AppxPackage.Name)]"}
+}
 
-		Write-Host -Object "Attempting to uninstall: [$($_.Name)]..."
-		$uninstallcommand = $_.String
+# Remove installed programs
+$InstalledPrograms | ForEach-Object {
 
-		Try {
-			if ($uninstallcommand -match "^msiexec*") {
-				#Remove msiexec as we need to split for the uninstall
-				$uninstallcommand = $uninstallcommand -replace "msiexec.exe", ""
-				#Uninstall with string2 params
-				Start-Process 'msiexec.exe' -ArgumentList $uninstallcommand -NoNewWindow -Wait
-				}
-				else {
-				#Exe installer, run straight path
-				$string2 = $uninstallcommand
-				start-process $string2
-				}
-			#$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode
-			#$Null = $_ | Uninstall-Package -AllVersions -Force -ErrorAction Stop
-			Write-Host -Object "Successfully uninstalled: [$($_.Name)]"
-		}
-		Catch {Write-Warning -Message "Failed to uninstall: [$($_.Name)]"}
+    Write-Host -Object "Attempting to uninstall: [$($_.Name)]..."
+    $uninstallcommand = $_.String
+
+    Try {
+        if ($uninstallcommand -match "^msiexec*") {
+            #Remove msiexec as we need to split for the uninstall
+            $uninstallcommand = $uninstallcommand -replace "msiexec.exe", ""
+            #Uninstall with string2 params
+            Start-Process 'msiexec.exe' -ArgumentList $uninstallcommand -NoNewWindow -Wait
+            }
+            else {
+            #Exe installer, run straight path
+            $string2 = $uninstallcommand
+            start-process $string2
+            }
+        #$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode
+        #$Null = $_ | Uninstall-Package -AllVersions -Force -ErrorAction Stop
+        Write-Host -Object "Successfully uninstalled: [$($_.Name)]"
+    }
+    Catch {Write-Warning -Message "Failed to uninstall: [$($_.Name)]"}
 
 
-	}
+}
 
 ##Belt and braces, remove via CIM too
 foreach ($program in $UninstallPrograms) {
@@ -1513,11 +1575,11 @@ $WhitelistedApps = @(
     }        
     }
 
-    $UninstallPrograms = $UninstallPrograms | Where-Object{$WhitelistApps -notcontains $_}
+    $UninstallPrograms = $UninstallPrograms | Where-Object{$WhitelistedApps -notcontains $_}
 
-    $ProvisionedPackages = Get-AppxProvisionedPackage -Online | Where-Object {(($UninstallPrograms -contains $_.DisplayName) -or ($_.DisplayName -like "*Dell"))-and ($_.DisplayName -notin $WhitelistedApps)}
+    $ProvisionedPackages = Get-AppxProvisionedPackage -Online | Where-Object {(($UninstallPrograms -contains $_.DisplayName) -or (($_.DisplayName -like "*Dell")-and ($_.DisplayName -notin $WhitelistedApps)))}
 
-    $InstalledPackages = Get-AppxPackage -AllUsers | Where-Object {(($UninstallPrograms -contains $_.Name) -or ($_.Name -like "*Dell"))-and ($_.Name -notin $WhitelistedApps)}
+    $InstalledPackages = Get-AppxPackage -AllUsers | Where-Object {(($UninstallPrograms -contains $_.Name) -or (($_.Name -like "*Dell"))-and ($_.Name -notin $WhitelistedApps))}
     
     $InstalledPrograms = $allstring | Where-Object {$UninstallPrograms -contains $_.Name}
     # Remove provisioned packages first
@@ -2022,7 +2084,6 @@ ForEach ($sc in $safeconnects) {
 	if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
 		Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
 	}
-
 }
 
 
@@ -2041,11 +2102,12 @@ $userprofiles = Get-ChildItem $userpath | ForEach-Object { Get-ItemProperty $_.P
 
 $nonAdminLoggedOn = $false
 foreach ($user in $userprofiles) {
-	if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
+    if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
         $nonAdminLoggedOn = $true
         break
     }
 }
+
 write-host "intunecomplete:$intunecomplete"
 write-host "nonadmin:$nonAdminLoggedOn"
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
@@ -2133,17 +2195,20 @@ write-host "Removing Chrome"
 Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
 }
 
+
 }
 
-##Remove any pre-installed versions of Office
-write-host "Oficecheck"
+##Remove ANY pre-installed versions of Office
+write-host "OfficeCheck"
 test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe'
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 	write-host "removing all Office versions"
-	### Download SaRa Office UNinstall script ###
-	write-host "Downloading SaRa Ofice Remooval Tool"
+	### Download SaRa Office Uninstall script ###
+	write-host "Downloading SaRa Office Removal Tool"
 	
 	# Download Source
+	#This fork of the SaRa tool has a bug fix so that the OfficeScrubScenario will run
+		# and is set to do OfficeScrubScenario
 	$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
 	# Set Save Directory
 	$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
