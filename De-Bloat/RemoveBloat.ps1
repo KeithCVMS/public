@@ -415,8 +415,17 @@ write-host "CustWhite: $customwhitelist"
     $appstoignore = $WhitelistedApps += $NonRemovable
 
 
-    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
-    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
+    write-host "Removing packages by default"
+	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore}
+	ForEach ($Ppkg in $PpkgRemove) {
+            Write-Host "Removing Default provisioned package:   $Ppkg"
+ 			$Ppkg | Remove-AppxProvisionedPackage | out-null
+	}		
+    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore}
+	ForEach ($Apkg in $ApkgRemove) {
+            Write-Host "Removing Default Appx package:   $Apkg"
+ 			$Apkg | Remove-AppxProvisionedPackage -Allusers | out-null
+	}		
 
 
 ##Remove bloat
