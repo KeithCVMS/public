@@ -416,11 +416,13 @@ write-host "CustWhite: $customwhitelist"
 
 
     write-host "Removing packages by default"
+	get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
 	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore}
 	ForEach ($Ppkg in $PpkgRemove) {
             Write-Host "Removing Default provisioned package:   $Ppkg"
  			$Ppkg | Remove-AppxProvisionedPackage | out-null
 	}		
+	get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
     $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore}
 	ForEach ($Apkg in $ApkgRemove) {
             Write-Host "Removing Default Appx package:   $Apkg"
