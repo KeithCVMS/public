@@ -418,6 +418,7 @@ write-host "CustWhite: $customwhitelist"
 #    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
 #    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
 ##
+get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
 
 ##Remove bloat
 $Bloatware = @(
@@ -2084,10 +2085,10 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee
 if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
 }
-$erroractionpreference = "continue"
+<# $erroractionpreference = "continue"
 Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online
 $erroractionpreference = "silentlycontinue"
-
+ #>
 }
 
 
@@ -2221,6 +2222,8 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	invoke-expression -command $destination -ErrorAction Continue
 }
 write-host "Anything else removal complete"
+
+get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
 
 }
 
