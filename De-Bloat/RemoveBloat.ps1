@@ -414,32 +414,10 @@ write-host "CustWhite: $customwhitelist"
     ##Combine the two arrays
     $appstoignore = $WhitelistedApps += $NonRemovable
 
-
-$ErrorActionPreference = 'Continue'
-write-host "Removing packages by default"
-write-host " "
-	get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
-	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} 
-$PpkgRemove
-foreach ($Ppkg in $PpkgRemove) {
-            Write-Host "Removing Default provisioned package:   [$($Ppkg.DisplayName)]"
- 			$Ppkg | Remove-AppxProvisionedPackage -online | out-null
-	}		
-write-host " "
-		get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
-write-host " "
-write-host "************************************************************************************"
-write-host " "
-
-get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
-    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} 
-	ForEach ($Apkg in $ApkgRemove) {
-            Write-Host "Removing Default Appx package:   $Apkg"
- 			$Apkg | Remove-AppxPackage -Allusers | out-null
-	}		
-write-host " "
-get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
-$ErrorActionPreference = 'SilentlyContinue'
+###block this out as it removes a lot of stuff and internally errors
+#    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
+#    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
+##
 
 ##Remove bloat
 $Bloatware = @(
@@ -2099,13 +2077,17 @@ ForEach ($sc in $safeconnects) {
         cmd.exe /c $sc.UninstallString /quiet /norestart
     }
 }
-	##remove leftover Mcafee items from StartMenu-AllApps and uninstall registry keys
-	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee") {
-		Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee" -Recurse -Force
-	}
-	if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
-		Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
-	}
+##remove leftover Mcafee items from StartMenu-AllApps and uninstall registry keys
+if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee") {
+	Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee" -Recurse -Force
+}
+if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
+	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
+}
+$erroractionpreference = "continue"
+Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online
+$erroractionpreference = "silentlycontinue"
+
 }
 
 
@@ -2130,8 +2112,6 @@ foreach ($user in $userprofiles) {
     }
 }
 
-write-host "intunecomplete:$intunecomplete"
-write-host "nonadmin:$nonAdminLoggedOn"
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
 
 
@@ -2229,7 +2209,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	write-host "Downloading SaRa Office Removal Tool"
 	
 	# Download Source
-	#This fork of the SaRa tool has a bug fix so that the OfficeScrubScenario will run
+	#This fork of the SaRa Enterprise tool has a bug fix so that the OfficeScrubScenario will run
 		# and is set to do OfficeScrubScenario
 	$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
 	# Set Save Directory
