@@ -419,10 +419,11 @@ $ErrorActionPreference = 'Continue'
 write-host "Removing packages by default"
 write-host " "
 	get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
-	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname
-	ForEach ($Ppkg in $PpkgRemove) {
+	$PpkgRemove = Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} 
+$PpkgRemove
+foreach ($Ppkg in $PpkgRemove) {
             Write-Host "Removing Default provisioned package:   [$($Ppkg.DisplayName)]"
- 			$Ppkg | Remove-AppxProvisionedPackage | out-null
+ 			$Ppkg | Remove-AppxProvisionedPackage -online | out-null
 	}		
 write-host " "
 		get-appxprovisionedpackage -online | Where-Object {$_.DisplayName -notin $appstoignore} | sort-object displayname |Format-Table displayname, packagename
@@ -431,10 +432,10 @@ write-host "********************************************************************
 write-host " "
 
 get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
-    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} |sort-object name
+    $ApkgRemove = Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} 
 	ForEach ($Apkg in $ApkgRemove) {
             Write-Host "Removing Default Appx package:   $Apkg"
- 			$Apkg | Remove-AppxProvisionedPackage -Allusers | out-null
+ 			$Apkg | Remove-AppxPackage -Allusers | out-null
 	}		
 write-host " "
 get-appxpackage -allusers | Where-Object {$_.Name -notin $appstoignore} | sort-object name | Format-Table name, packagefullname
