@@ -418,7 +418,8 @@ write-host "CustWhite: $customwhitelist"
 #    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
 #    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
 ##
-get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
+#get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
+Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
 
 ##Remove bloat
 $Bloatware = @(
@@ -1984,6 +1985,7 @@ if (Test-Path $lenovonow) {
 #McAfee
 
 write-host "Detecting McAfee"
+Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
 $mcafeeinstalled = "false"
 $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
 foreach($obj in $InstalledSoftware){
