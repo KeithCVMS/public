@@ -1,6 +1,7 @@
 ﻿<#
 .SYNOPSIS
 .Removes bloat from a fresh Windows build
+. forked from Andrew Taylor
 .DESCRIPTION
 .Removes AppX Packages
 .Disables Cortana
@@ -92,6 +93,13 @@ C:\ProgramData\Debloat\Debloat.log
   Change 19/05/2024 - Disabled feeds on Win11
   Change 21/05/2024 - Added QuickAssist to removal after security issues
   Change 25/05/2024 - Whitelist array fix
+  Change KH fork	- change to $DebloatFolder directory (purely a tenant specific mod)
+					- logic to use a tag file for sensing previous installs and preventing multiple executions during pre-provisioning
+					- additional HP bloat removal for WildTangent and Edge favorites
+					- adjustments to ensure all whiteliste and nonremovable packages are accounted for in later remove-package loops
+					- a few more additional Mcafee cleanup items at end of section
+					- minor correction to entry logic for "other stuff removal" after Mcafee cleanup					
+					- change to use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
 N/A
 #>
 
@@ -147,7 +155,10 @@ $CurrProf = $Env:Userprofile
 
 If (Test-Path $DebloatTag) {
 	if ($CurrProf -like "*systemprofile*") {
- 		write-host "Script has already been run. Exiting"
+		# This prevents the script from running mutiple times during pre-provisioning
+		# but still allows it run multiple times if being run in a user Context
+		# multiple attempts are recorded in the tag file
+		write-host "Script has already been run. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
 		Exit 0
 	}
@@ -161,11 +172,10 @@ Else {
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 
-write-host "CurrProf:$CurrProf"
-
 if ($CurrProf -like "*systemprofile*") {
-	write-host "preprov run"
+	write-host "AutoPilot PreProvisioning run"
 }
+
 $locale = Get-WinSystemLocale | Select-Object -expandproperty Name
 
 ##Switch on locale to set variables
@@ -333,7 +343,6 @@ if (!(Test-Path HKU:)) {
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
 ############################################################################################################
-write-host "CustWhite: $customwhitelist"
 
     #Removes AppxPackages
     $WhitelistedApps = @(
@@ -414,12 +423,10 @@ write-host "CustWhite: $customwhitelist"
     ##Combine the two arrays
     $appstoignore = $WhitelistedApps += $NonRemovable
 
-###block this out as it removes a lot of stuff and internally errors
+###blocked this out as it removes a lot of stuff and produces a lot of hidden errors trying to remove Windows uninstallable components
 #    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
 #    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
 ##
-#get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
-Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
 
 ##Remove bloat
 $Bloatware = @(
@@ -1379,8 +1386,8 @@ $UninstallPrograms = @(
     $HPWhitelistedApps = @(
 )
 
-##Add apptoignore to $HPWhitelistedApps
-	#This ensures that we don't inadvertently remove specifically whitelisted or nonremovables
+##Change to Add apptoignore to $HPWhitelistedApps
+#This ensures that we don't inadvertently remove specifically whitelisted or nonremovable packages
 	$HPWhitelistedApps = $HPWhitelistedApps + $appstoignore
 
 $UninstallPrograms = $UninstallPrograms | Where-Object{$HPWhitelistedApps -notcontains $_}
@@ -1469,10 +1476,11 @@ if (Test-Path -Path "C:\ProgramData\HP\TCO" -PathType Container) {Remove-Item -P
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Amazon.com.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Amazon.com.lnk" -Force}
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Angebote.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Angebote.lnk" -Force}
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Certified.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Certified.lnk" -Force}
+# a couple more HP links to remove	
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -Force}
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -Force}
 
-	#Brute-force removal of WildTangent Games HP crud
+#Brute-force removal of WildTangent Games HP crud
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -Force}
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -PathType Container) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -Recurse -Force}
 	if (Test-Path -Path "C:\ProgramData\WildTangent" -PathType Container) {Remove-Item -Path "C:\ProgramData\WildTangent" -Recurse -Force}
@@ -1497,10 +1505,7 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Ce
 		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 	}
 
-	#This clears any HP preinstalled MsEdge favorites so that it can be cleanly customized using custom json or Intune Managed Favorites
-	#destination file is C:\Users\<userprofile>\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks
-	#backup file is C:\Users\<userprofile>\AppData\Local\Microsoft\Edge\User Data\Default\bookmarks.bak
-	# try running from preprov to see if defaultuser gets created "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+#This clears any HP preinstalled MsEdge favorites so that it can be cleanly customized using custom json or Intune Managed Favorites
 
 	#Delete the ini file that is involved
 	if (Test-Path -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -PathType Leaf) {Remove-Item -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -Force}
@@ -1985,7 +1990,6 @@ if (Test-Path $lenovonow) {
 #McAfee
 
 write-host "Detecting McAfee"
-Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
 $mcafeeinstalled = "false"
 $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
 foreach($obj in $InstalledSoftware){
@@ -2080,20 +2084,17 @@ ForEach ($sc in $safeconnects) {
         cmd.exe /c $sc.UninstallString /quiet /norestart
     }
 }
-##remove leftover Mcafee items from StartMenu-AllApps and uninstall registry keys
+##
+##remove some extra leftover Mcafee items from StartMenu-AllApps and uninstall registry keys
+##
 if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee") {
 	Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee" -Recurse -Force
 }
 if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
 }
-$erroractionpreference = "continue"
-Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
+#Interesting emough, this producese an erro, but still deletes the package anyway
 Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
-
-Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage"
-
-$erroractionpreference = "silentlycontinue"
 
 }
 
@@ -2113,12 +2114,15 @@ $userprofiles = Get-ChildItem $userpath | ForEach-Object { Get-ItemProperty $_.P
 
 $nonAdminLoggedOn = $false
 foreach ($user in $userprofiles) {
-    if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
+#first condition changed to use profileimageath as the default use ins not alwasy default e.g. default0 on some systems
+if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
         $nonAdminLoggedOn = $true
         break
     }
 }
 
+# This logic is corrected so that the code runs if there are no intuneinstalled items($intunecomplete -lt 1)
+#	and therehas been no nonADmins logged into the system ($nonAdminLoggedOn -eq $false)
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
 
 
@@ -2208,8 +2212,9 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 }
 
 ##Remove ANY pre-installed versions of Office
-write-host "OfficeCheck"
-test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe'
+# This was changed to use the MS SaRa Enterprise tool as MsTeamsWork installs work unreliably if there is ANY remnant of an Office install
+# the SaRa tool was forked and patched for a code bug that prevented it runnning in OfficeScrubScenario
+#
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 	write-host "removing all Office versions"
 	### Download SaRa Office Uninstall script ###
@@ -2226,10 +2231,12 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 	#Run the SaraRemoval script
 	invoke-expression -command $destination -ErrorAction Continue
+} else {
+	write-host "No ClickToRun Office versions found"
 }
+
 write-host "Anything else removal complete"
 
-get-appxprovisionedpackage -online | sort-object displayname |format-table DisplayName, Packagename
 
 }
 
