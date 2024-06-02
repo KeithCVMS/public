@@ -338,7 +338,8 @@ if (!(Test-Path HKCR:)) {
 if (!(Test-Path HKU:)) {
 	New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
 }
-
+get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
@@ -2239,6 +2240,8 @@ write-host "Anything else removal complete"
 
 
 }
+get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 
 write-host "Completed"
 
