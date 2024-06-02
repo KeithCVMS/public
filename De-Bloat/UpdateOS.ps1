@@ -36,7 +36,9 @@ Version 1.3:  Force use of Microsoft Update/WU.
 Version 1.2:  Updated to work on ARM64.
 Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
-
+KH changes	inclusion of NETFX3 install here rather than in AutopilotBranding
+			part of cahnge to call updateos from intune platform script rather than win32
+			
 #>
 
 <#
@@ -97,7 +99,8 @@ if ($currentWU -eq 1) {
 	Restart-Service wuauserv -force
 }
 write-host "Adding Windows feature: $_"
-Add-WindowsCapability -Online -Name NetFX3~~~~ -ErrorAction SilentlyContinue | Out-Null
+#Add-WindowsCapability -Online -Name NetFX3~~~~ -ErrorAction SilentlyContinue | Out-Null
+#Add-WindowsCapability -Online -Name NetFX3~~~~ -ErrorAction Continue
 
 if ($currentWU -eq 1) {
 	write-host "Turning on WSUS"
