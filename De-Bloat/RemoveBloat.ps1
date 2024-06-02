@@ -100,6 +100,7 @@ C:\ProgramData\Debloat\Debloat.log
 					- a few more additional Mcafee cleanup items at end of section
 					- minor correction to entry logic for "other stuff removal" after Mcafee cleanup					
 					- change to use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
+					- -allusers switches for all remove-AppxPackage commands
 N/A
 #>
 
@@ -518,13 +519,13 @@ $Bloatware = @(
     foreach ($Bloat in $Bloatware) {
         
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -allusers -Online
             Write-Host "Removed provisioned package for $Bloat."
         } else {
             Write-Host "Provisioned package for $Bloat not found."
         }
 
-        if (Get-AppxPackage -Name $Bloat -ErrorAction SilentlyContinue) {
+        if (Get-AppxPackage -allusers -Name $Bloat -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name $Bloat | Remove-AppxPackage -AllUsers
             Write-Host "Removed $Bloat."
         } else {
