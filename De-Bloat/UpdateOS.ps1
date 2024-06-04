@@ -86,7 +86,7 @@ Process {
     # Main logic
     $script:needReboot = $false
 
-# Add logic to install NetFX here instead of in AutopilotBranding
+<# # Add logic to install NetFX here instead of in AutopilotBranding
 
 $ci = get-computerinfo
 write-host "OSversion:$($ci.OsName)"
@@ -107,7 +107,7 @@ if ($currentWU -eq 1) {
 	Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU"  -Name "UseWuServer" -Value 1
 	Restart-Service wuauserv
 }
-
+ #>
 #Now install OS Updates
     # Opt into Microsoft Update
     $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
