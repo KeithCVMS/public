@@ -427,7 +427,9 @@ get-appxpackage -allusers |sort-object name | format-table name, packagefullname
     ##Combine the two arrays
     $appstoignore = $WhitelistedApps += $NonRemovable
 
-###blocked this out as it removes a lot of stuff and produces a lot of hidden errors trying to remove Windows uninstallable components
+###blocked this out as it removes a lot of stuff and produces a lot of hidden errors trying to remove other Windows uninstallable components
+## as it stands iot will also delete items that may be explicitly whitelisted in the Manufacturer debloat sections
+## Since it is a "blind" delete,, it risks deleteing components and packages that may be desireable as ms makes changes
 #    Get-AppxProvisionedPackage -Online | Where-Object {$_.DisplayName -notin $appstoignore} | Remove-AppxProvisionedPackage -Online
 #    Get-AppxPackage -AllUsers | Where-Object {$_.Name -notin $appstoignore} | Remove-AppxPackage
 ##
@@ -527,8 +529,8 @@ $Bloatware = @(
             Write-Host "Provisioned package for $Bloat not found."
         }
 
-        if (Get-AppxPackage -allusers -Name $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxPackage -allusers -Name $Bloat | Remove-AppxPackage -AllUsers
+        if (Get-AppxPackage -allusers -Name -like $Bloat -ErrorAction SilentlyContinue) {
+            Get-AppxPackage -allusers -Name -like $Bloat | Remove-AppxPackage -AllUsers
             Write-Host "Removed $Bloat."
         } else {
             Write-Host "$Bloat not found."
@@ -2014,6 +2016,8 @@ foreach($obj32 in $InstalledSoftware32){
 if ($mcafeeinstalled -eq "true") {
     Write-Host "McAfee detected"
     #Remove McAfee bloat
+    get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 ##McAfee
 ### Download McAfee Consumer Product Removal Tool ###
 write-host "Downloading McAfee Removal Tool"
@@ -2097,7 +2101,9 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\McAfee
 if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
 }
-#Interesting emough, this producese an erro, but still deletes the package anyway
+#Interesting emough, this producese an error, but still deletes the package anyway
+get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 
 }
