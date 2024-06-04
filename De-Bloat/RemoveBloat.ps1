@@ -93,14 +93,16 @@ C:\ProgramData\Debloat\Debloat.log
   Change 19/05/2024 - Disabled feeds on Win11
   Change 21/05/2024 - Added QuickAssist to removal after security issues
   Change 25/05/2024 - Whitelist array fix
-  Change KH fork	- change to $DebloatFolder directory (purely a tenant specific mod)
-					- logic to use a tag file for sensing previous installs and preventing multiple executions during pre-provisioning
-					- additional HP bloat removal for WildTangent and Edge favorites
-					- adjustments to ensure all whiteliste and nonremovable packages are accounted for in later remove-package loops
-					- a few more additional Mcafee cleanup items at end of section
-					- minor correction to entry logic for "other stuff removal" after Mcafee cleanup					
-					- change to use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
-					- -allusers switches for all remove-AppxPackage commands
+  Change KH fork	- Specific tenant mods
+  				- change to $DebloatFolder directory (purely a tenant specific mod)
+				- logic to use a tag file for sensing previous installs and preventing multiple executions during pre-provisioning
+			-General mods
+   				- additional HP bloat brute force removal for WildTangent and Edge favorites
+				- adjustments to ensure all whitelist(standard and custom) and nonremovable packages are excluded in all remove-package loops
+				- a few more additional Mcafee cleanup items at end of section (startmenu and favorites)
+				- correction to inital decision logic for "other stuff removal" after Mcafee cleanup (Autopilot installs)					
+				- use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
+				- -allusers switches for all remove-AppxPackage commands
 N/A
 #>
 
