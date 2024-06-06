@@ -102,7 +102,7 @@ C:\ProgramData\Debloat\Debloat.log
 				- a few more additional Mcafee cleanup items at end of section (startmenu and favorites)
 				- correction to inital decision logic for "other stuff removal" after Mcafee cleanup (Autopilot installs)					
 				- use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
-				- -allusers switches for all remove-AppxPackage commands
+				- -allusers switches for all remove-Appx commands
 N/A
 #>
 
@@ -523,7 +523,7 @@ $Bloatware = @(
     foreach ($Bloat in $Bloatware) {
         
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -allusers -Online
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online
             Write-Host "Removed provisioned package for $Bloat."
         } else {
             Write-Host "Provisioned package for $Bloat not found."
@@ -908,7 +908,7 @@ Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove AppxPackage -allusers
     foreach ($package in $packages) {
  		$appPackage = Get-AppxProvisionedPackage -online | Where-Object { $_.DisplayName -eq $package} -ErrorAction SilentlyContinue
 		if ($appPackage) {
-			$appPackage | Remove-AppxProvisionedPackage | out-null
+			$appPackage | Remove-AppxProvisionedPackage -Online -AllUsers | out-null
 			Write-Host "Removed Win11 ProvisionedPackage $package"
 		} else {
 			Write-Host "Win11 ProvisionedPackage $package not found"
@@ -1412,7 +1412,7 @@ ForEach ($ProvPackage in $ProvisionedPackages) {
     Write-Host -Object "Attempting to remove provisioned package: [$($ProvPackage.DisplayName)]..."
 
     Try {
-        $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -ErrorAction Stop
+        $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -AllUsers -ErrorAction Stop
         Write-Host -Object "Successfully removed provisioned package: [$($ProvPackage.DisplayName)]"
     }
     Catch {Write-Warning -Message "Failed to remove provisioned package: [$($ProvPackage.DisplayName)]"}
@@ -1601,7 +1601,7 @@ ForEach ($ProvPackage in $ProvisionedPackages) {
     Write-Host -Object "Attempting to remove provisioned package: [$($ProvPackage.DisplayName)]..."
 
     Try {
-        $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -ErrorAction Stop
+        $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -AllUsers -ErrorAction Stop
         Write-Host -Object "Successfully removed provisioned package: [$($ProvPackage.DisplayName)]"
     }
     Catch {Write-Warning -Message "Failed to remove provisioned package: [$($ProvPackage.DisplayName)]"}
@@ -1834,7 +1834,7 @@ if ($manufacturer -like "Lenovo") {
         Write-Host -Object "Attempting to remove provisioned package: [$($ProvPackage.DisplayName)]..."
     
         Try {
-            $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -ErrorAction Stop
+            $Null = Remove-AppxProvisionedPackage -PackageName $ProvPackage.PackageName -Online -AllUsers -ErrorAction Stop
             Write-Host -Object "Successfully removed provisioned package: [$($ProvPackage.DisplayName)]"
         }
         Catch {Write-Warning -Message "Failed to remove provisioned package: [$($ProvPackage.DisplayName)]"}
