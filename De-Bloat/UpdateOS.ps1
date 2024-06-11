@@ -38,6 +38,7 @@ Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
 KH changes	inclusion of NETFX3 install here rather than in AutopilotBranding
 			part of cahnge to call updateos from intune platform script rather than win32
+   		if (!$_.EulaAccepted) { $_.AcceptEula() } patch courtesy mdmplayground
 			
 #>
 
@@ -137,7 +138,7 @@ if ($currentWU -eq 1) {
         $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Write-Host "$ts Getting $_ updates."        
         ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
-            if (!$_.EulaAccepted) { $_.EulaAccepted = $true }
+            if (!$_.EulaAccepted) { $_.AcceptEula() }
             if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
 
