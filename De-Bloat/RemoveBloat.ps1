@@ -523,7 +523,7 @@ $Bloatware = @(
     foreach ($Bloat in $Bloatware) {
         
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online -LogLevel 1
             Write-Host "Removed provisioned package for $Bloat."
         } else {
             Write-Host "Provisioned package for $Bloat not found."
