@@ -103,6 +103,8 @@ C:\ProgramData\Debloat\Debloat.log
 				- correction to inital decision logic for "other stuff removal" after Mcafee cleanup (Autopilot installs)					
 				- use a corrected version of MS SaRA Enterprise tool to remove Office versions so subsequent M365 MSTeams installs work reliably
 				- -allusers switches for all remove-Appx commands
+    				- added loglevel for remove-appxprovisionedpackages
+				- added outlookforwindows to MS bloat
 N/A
 #>
 
@@ -506,6 +508,7 @@ $Bloatware = @(
     "C27EB4BA.DropboxOEM*"
     "*DevHome*"
     "MicrosoftCorporationII.QuickAssist"
+    "Microsoft.OutlookforWindows"
     #Optional: Typically not removed but you can if you need to for some reason
     #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
     #"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
