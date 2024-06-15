@@ -343,8 +343,8 @@ if (!(Test-Path HKCR:)) {
 if (!(Test-Path HKU:)) {
 	New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
 }
-get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
@@ -526,14 +526,14 @@ $Bloatware = @(
     foreach ($Bloat in $Bloatware) {
         
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online -LogLevel 1
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online -LogLevel 1 | Out-Null
             Write-Host "Removed provisioned package for $Bloat."
         } else {
             Write-Host "Provisioned package for $Bloat not found."
         }
 
         if (Get-AppxPackage -allusers -Name -like $Bloat -ErrorAction SilentlyContinue) {
-            Get-AppxPackage -allusers -Name -like $Bloat | Remove-AppxPackage -AllUsers
+            Get-AppxPackage -allusers -Name -like $Bloat | Remove-AppxPackage -AllUsers | Out-Null
             Write-Host "Removed $Bloat."
         } else {
             Write-Host "$Bloat not found."
@@ -1489,6 +1489,7 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Ce
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -Force}
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -Force}
 
+write-host "Remove WildTangent"
 #Brute-force removal of WildTangent Games HP crud
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WildTangent Games.lnk" -Force}
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -PathType Container) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Games" -Recurse -Force}
@@ -1516,7 +1517,8 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Ce
 
 #This clears any HP preinstalled MsEdge favorites so that it can be cleanly customized using custom json or Intune Managed Favorites
 
-	#Delete the ini file that is involved
+	write-host "clear MsEdge Favorites"
+ 	#Delete the ini file that is involved
 	if (Test-Path -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -PathType Leaf) {Remove-Item -Path "C:\HP\HPQWare\BTBHost\WizEdgeFav.ini" -Force}
 
 	#Clear Registry keys to delete the pre-loaded favorites
@@ -2019,8 +2021,8 @@ foreach($obj32 in $InstalledSoftware32){
 if ($mcafeeinstalled -eq "true") {
     Write-Host "McAfee detected"
     #Remove McAfee bloat
-    get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 ##McAfee
 ### Download McAfee Consumer Product Removal Tool ###
 write-host "Downloading McAfee Removal Tool"
@@ -2105,8 +2107,8 @@ if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\M
 	Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
 }
 #Interesting emough, this producese an error, but still deletes the package anyway
-get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 
 }
@@ -2252,8 +2254,8 @@ write-host "Anything else removal complete"
 
 
 }
-get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 
 write-host "Completed"
 
