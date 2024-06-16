@@ -345,6 +345,7 @@ if (!(Test-Path HKU:)) {
 }
 #get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
 #get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+Write-Host "CustomWhitelist:"$customwhitelist
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
@@ -428,6 +429,7 @@ if (!(Test-Path HKU:)) {
 
     ##Combine the two arrays
     $appstoignore = $WhitelistedApps += $NonRemovable
+Write-Host "Appstoignore:"$appstoignore
 
 ###blocked this out as it removes a lot of stuff and produces a lot of hidden errors trying to remove other Windows uninstallable components
 ## as it stands iot will also delete items that may be explicitly whitelisted in the Manufacturer debloat sections
