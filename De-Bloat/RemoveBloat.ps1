@@ -2023,8 +2023,6 @@ foreach($obj32 in $InstalledSoftware32){
 if ($mcafeeinstalled -eq "true") {
     Write-Host "McAfee detected"
     #Remove McAfee bloat
-#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 ##McAfee
 ### Download McAfee Consumer Product Removal Tool ###
 write-host "Downloading McAfee Removal Tool"
@@ -2035,7 +2033,24 @@ $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mcafeeclean.
 $destination = 'C:\ProgramData\Debloat\mcafee.zip'
 
 #Download the file
-Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
+	Log "Downloading $destination"
+	$attempt = 1
+	# this loop inserted to allow for unstable internet connection failing the Download
+	while($attempt -le 5) {
+		Log "Download Attempt: $attempt"
+		if (test-path -path $destination) {remove-item -path $destination}
+		try {
+			Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
+			Log "Download Complete"
+			break
+		}
+		Catch {
+			Log "Download failed - retry"
+			$attempt++
+			start-sleep 10
+			ping www.github.com
+		}
+	}
   
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 
