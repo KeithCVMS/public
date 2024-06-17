@@ -2033,19 +2033,19 @@ $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mcafeeclean.
 $destination = 'C:\ProgramData\Debloat\mcafee.zip'
 
 #Download the file
-	Log "Downloading $destination"
+	write-host "Downloading $destination"
 	$attempt = 1
 	# this loop inserted to allow for unstable internet connection failing the Download
 	while($attempt -le 5) {
-		Log "Download Attempt: $attempt"
+		write-host "Download Attempt: $attempt"
 		if (test-path -path $destination) {remove-item -path $destination}
 		try {
 			Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
-			Log "Download Complete"
+			write-host "Download Complete"
 			break
 		}
 		Catch {
-			Log "Download failed - retry"
+			write-host "Download failed - retry"
 			$attempt++
 			start-sleep 10
 			ping www.github.com
@@ -2061,7 +2061,7 @@ write-host "McAfee Removal Tool has been run"
 
 ###New MCCleanup
 ### Download McAfee Consumer Product Removal Tool ###
-write-host "Downloading McAfee Removal Tool"
+write-host "Downloading McAfee cleanup removal Tool"
 # Download Source
 $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mccleanup.zip'
 
@@ -2069,8 +2069,25 @@ $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mccleanup.zi
 $destination = 'C:\ProgramData\Debloat\mcafeenew.zip'
 
 #Download the file
-Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
-  
+	write-host "Downloading $destination"
+	$attempt = 1
+	# this loop inserted to allow for unstable internet connection failing the Download
+	while($attempt -le 5) {
+		write-host "Download Attempt: $attempt"
+		if (test-path -path $destination) {remove-item -path $destination}
+		try {
+			Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
+			write-host "Download Complete"
+			break
+		}
+		Catch {
+			write-host "Download failed - retry"
+			$attempt++
+			start-sleep 10
+			ping www.github.com
+		}
+	}
+
 New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
 
@@ -2259,7 +2276,24 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	# Set Save Directory
 	$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
 	#Download the file
-	Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
+	write-host "Downloading $destination"
+	$attempt = 1
+	# this loop inserted to allow for unstable internet connection failing the Download
+	while($attempt -le 5) {
+		write-host "Download Attempt: $attempt"
+		if (test-path -path $destination) {remove-item -path $destination}
+		try {
+			Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
+			write-host "Download Complete"
+			break
+		}
+		Catch {
+			write-host "Download failed - retry"
+			$attempt++
+			start-sleep 10
+			ping www.github.com
+		}
+	}
 
 	#Run the SaraRemoval script
 	invoke-expression -command $destination -ErrorAction Continue
