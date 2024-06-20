@@ -1490,6 +1490,8 @@ if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Ce
 # a couple more HP links to remove	
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -Force}
 	if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -PathType Leaf) {Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -Force}
+	#removes default taskbar layout??
+ 	if (Test-Path -Path "C:\hp\HPQWare\BTBHost\PBR\BTBHost\TaskbarLayoutModification.xml" -PathType Leaf) {Remove-Item -Path "C:\hp\HPQWare\BTBHost\PBR\BTBHost\TaskbarLayoutModification.xml" -Force}
 
 write-host "Remove WildTangent"
 #Brute-force removal of WildTangent Games HP crud
