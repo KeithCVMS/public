@@ -349,7 +349,9 @@ get-appxprovisionedpackage -online | sort-object displayname |format-table displ
 write-Host " "
 write-host "************AppxPackages*******************"
 get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+write-host " "
 Write-Host "CustomWhitelist:"$customwhitelist
+write-host " "
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
