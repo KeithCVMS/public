@@ -531,14 +531,14 @@ $Bloatware = @(
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -AllUsers -Online -LogLevel 1 | Out-Null
             Write-Host "Removed provisioned package for $Bloat."
         } else {
-            Write-Host "Provisioned package for $Bloat not found."
+            Write-Host "ProvPackage for $Bloat not found."
         }
 
         if (Get-AppxPackage -allusers -Name -like $Bloat -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name -like $Bloat | Remove-AppxPackage -AllUsers | Out-Null
             Write-Host "Removed $Bloat."
         } else {
-            Write-Host "$Bloat not found."
+            Write-Host "AppXPackage for $Bloat not found."
         }
 
 
