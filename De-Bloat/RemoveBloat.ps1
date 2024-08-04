@@ -343,6 +343,14 @@ if (!(Test-Path HKCR:)) {
 if (!(Test-Path HKU:)) {
 	New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
 }
+$intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
+if (Test-Path $intunepath) {
+	$intunecomplete = @(Get-ChildItem $intunepath).count
+} else {
+	$intunecomplete = 0
+}
+write-host " "
+write-host "IntuneComplete: $intunecomplete"
 write-host " "
 write-host "************ProvisionedPackages************"
 get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
