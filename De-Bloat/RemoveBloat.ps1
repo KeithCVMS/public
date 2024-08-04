@@ -2191,7 +2191,7 @@ write-host "intunecomplete:$intunecomplete"
 write-host "nonAdminLoggedOn:$nonAdminLoggedOn"
 # This logic is corrected so that the code runs if there are no intuneinstalled items($intunecomplete -lt 1)
 #	and therehas been no nonADmins logged into the system ($nonAdminLoggedOn -eq $false)
-if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
+if ($intunecomplete -lt 4 -and $nonAdminLoggedOn -eq $false) {
 
 
 ##Apps to remove - NOTE: Chrome has an unusual uninstall so sort on it's own
