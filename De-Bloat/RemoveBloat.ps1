@@ -2166,12 +2166,16 @@ $userprofiles = Get-ChildItem $userpath | ForEach-Object { Get-ItemProperty $_.P
 $nonAdminLoggedOn = $false
 foreach ($user in $userprofiles) {
 #first condition changed to use profileimageath as the default use ins not alwasy default e.g. default0 on some systems
+write-host "ProfileImagePath:$user.ProfileImagePath"
+write-host "PSChildName:$user.PSChildName"
+write-host "-"
 if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
         $nonAdminLoggedOn = $true
         break
     }
 }
-
+write-host "intunecomplete:$intunecomplete"
+write-host "nonAdminLoggedOn:$nonAdminLoggedOn"
 # This logic is corrected so that the code runs if there are no intuneinstalled items($intunecomplete -lt 1)
 #	and therehas been no nonADmins logged into the system ($nonAdminLoggedOn -eq $false)
 if ($intunecomplete -lt 1 -and $nonAdminLoggedOn -eq $false) {
