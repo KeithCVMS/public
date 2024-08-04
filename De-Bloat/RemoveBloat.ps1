@@ -343,8 +343,12 @@ if (!(Test-Path HKCR:)) {
 if (!(Test-Path HKU:)) {
 	New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
 }
-#get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
-#get-appxpackage -allusers |sort-object name | format-table name, packagefullname
+write-host " "
+write-host "************ProvisionedPackages************"
+get-appxprovisionedpackage -online | sort-object displayname |format-table displayname,packagename
+write-Host " "
+write-host "************AppxPackages*******************"
+get-appxpackage -allusers |sort-object name | format-table name, packagefullname
 Write-Host "CustomWhitelist:"$customwhitelist
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
@@ -464,7 +468,6 @@ $Bloatware = @(
     "Microsoft.Office.Todo.List"
     "Microsoft.Whiteboard"
     "Microsoft.WindowsAlarms"
-    #"Microsoft.WindowsCamera"
     "microsoft.windowscommunicationsapps"
     "Microsoft.WindowsFeedbackHub"
     "Microsoft.WindowsMaps"
@@ -508,7 +511,7 @@ $Bloatware = @(
     "*gaming*"
     "MicrosoftCorporationII.MicrosoftFamily"
     "C27EB4BA.DropboxOEM*"
-    "*DevHome*"
+    "Microsoft.Windows.DevHome"
     "MicrosoftCorporationII.QuickAssist"
     "Microsoft.OutlookforWindows"
     #Optional: Typically not removed but you can if you need to for some reason
@@ -1390,7 +1393,7 @@ $UninstallPrograms = @(
     "HP Wolf Security - Console"
     "HP Wolf Security Application Support for Chrome 122.0.6261.139"
     "Windows Driver Package - HP Inc. sselam_4_4_2_453 AntiVirus  (11/01/2022 4.4.2.453)"
-
+    "26720RandomSaladGamesLLC.3899848563C1F"
 )
 
 
