@@ -1349,7 +1349,7 @@ $allstring += New-Object -TypeName PSObject -Property @{
 }
 
 }
-
+write-host "ALLSTRING: $allstring"
 ############################################################################################################
 #                                        Remove Manufacturer Bloat                                         #
 #                                                                                                          #
