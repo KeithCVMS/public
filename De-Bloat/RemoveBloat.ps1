@@ -2130,6 +2130,7 @@ write-host "mckill:"$uninstallcommand
             else {
             #Exe installer, run straight path
             $string2 = $uninstallcommand
+write-host "mckillelse:"$string2
             start-process $string2
             }
         #$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode        
