@@ -2296,7 +2296,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
 	foreach ($Product in $AllVersions) {
 		foreach($Language in $AllLanguages){
-			write-host "$Product:$Language"
+			write-host "$($Product):$($Language)"
 			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=$($Product).16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
 			Start-Sleep -Seconds 5
 		}
