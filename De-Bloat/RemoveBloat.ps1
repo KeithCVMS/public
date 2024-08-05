@@ -2122,7 +2122,8 @@ $InstalledPrograms | ForEach-Object {
             #Remove msiexec as we need to split for the uninstall
             $uninstallcommand = $uninstallcommand -replace "msiexec.exe", ""
             $uninstallcommand = $uninstallcommand + " /quiet /norestart"
-            $uninstallcommand = $uninstallcommand -replace "/I", "/X "   
+            $uninstallcommand = $uninstallcommand -replace "/I", "/X " 
+write-host "mckill:"$uninstallcommand
             #Uninstall with string2 params
             Start-Process 'msiexec.exe' -ArgumentList $uninstallcommand -NoNewWindow -Wait
             }
@@ -2140,10 +2141,12 @@ $InstalledPrograms | ForEach-Object {
 
 ##Remove Safeconnect
 $safeconnects = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object { $_.DisplayName -match "McAfee Safe Connect" } | Select-Object -Property UninstallString
- 
+write-host "safeconnall:"$Safeconnects
+
 ForEach ($sc in $safeconnects) {
     If ($sc.UninstallString) {
-        cmd.exe /c $sc.UninstallString /quiet /norestart
+write-host "safecon:"$sc.uninstallstring
+cmd.exe /c $sc.UninstallString /quiet /norestart
     }
 }
 ##
@@ -2286,12 +2289,13 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 	#This gets the list of installed Office languages from the Registry Office Inventory
  	$OffLang = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeCulture' 
-  	$AllLanguages = $OffLang -split ","
 	#This gets a list of all installed Office products from the Office inventory
  	$OffProd = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeProductReleaseIds'
 ### OR ###
 ### Alternatively $AllProducts can be set manually for specific Product versions if desired
 ### $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
+	#convert to arrays
+ 	$AllLanguages = $OffLang -split ","
 	$AllProducts = $OffProd -split ","
 
 	write-host "AllProducts :" $AllProducts
