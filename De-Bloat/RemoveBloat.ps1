@@ -2282,15 +2282,16 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 ##Remove ANY pre-installed versions of Office
 
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
-	write-host "removing  Office versions and Languages"
+	write-host "removing Office Product Versions and Languages"
 
 	#This gets the list of installed Office languages from the Registry Office Inventory
  	$AllLanguages = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeCulture'
   
 	#This gets a list of all installed Office products from the Office inventory
  	$AllProducts = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeProductReleaseIds'
-## Alternatively $AllProducts can be set manually for specific Product versions if desired
-## $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
+### OR ###
+### Alternatively $AllProducts can be set manually for specific Product versions if desired
+### $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
 
 	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
 	foreach ($Product in $AllVersions) {
