@@ -1396,8 +1396,8 @@ $UninstallPrograms = @(
     "AD2F1837.HPSupportAssistant"
     "AD2F1837.HPSystemInformation"
     "AD2F1837.myHP"
-    "RealtekSemiconductorCorp.HPAudioControl",
-    "HP Sure Recover",
+    "RealtekSemiconductorCorp.HPAudioControl"
+    "HP Sure Recover"
     "HP Sure Run Module"
     "RealtekSemiconductorCorp.HPAudioControl_2.39.280.0_x64__dt26b99r8h8gj"
     "HP Wolf Security - Console"
