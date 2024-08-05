@@ -2293,8 +2293,10 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 ### Alternatively $AllProducts can be set manually for specific Product versions if desired
 ### $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
 
-	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-	foreach ($Product in $AllVersions) {
+	write-host "AllProducts :" $AllProducts
+ 	write-host "AllLanguages:" $AllLanguages
+  	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
+	foreach ($Product in $AllProducts) {
 		foreach($Language in $AllLanguages){
 			write-host "$($Product):$($Language)"
 			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=$($Product).16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
@@ -2320,4 +2322,4 @@ Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
 
 Stop-Transcript
 
-Exit 0
+Exit
