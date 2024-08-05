@@ -2285,20 +2285,21 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	write-host "removing Office Product Versions and Languages"
 
 	#This gets the list of installed Office languages from the Registry Office Inventory
- 	$AllLanguages = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeCulture'
-  
+ 	$OffLang = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeCulture' 
+  	$AllLanguages = $OffLang -split ","
 	#This gets a list of all installed Office products from the Office inventory
- 	$AllProducts = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeProductReleaseIds'
+ 	$OffProd = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeProductReleaseIds'
 ### OR ###
 ### Alternatively $AllProducts can be set manually for specific Product versions if desired
 ### $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
+	$AllProducts = $OffProd -split ","
 
 	write-host "AllProducts :" $AllProducts
  	write-host "AllLanguages:" $AllLanguages
   	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
 	foreach ($Product in $AllProducts) {
 		foreach($Language in $AllLanguages){
-			write-host "$($Product):$($Language)"
+			write-host "  $($Product):$($Language)"
 			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=$($Product).16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
 			Start-Sleep -Seconds 5
 		}
