@@ -2280,69 +2280,28 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 }
 
 ##Remove ANY pre-installed versions of Office
-# This was changed to use the MS SaRa Enterprise tool as MsTeamsWork installs work unreliably if there is ANY remnant of an Office install
-# the SaRa tool was forked and patched for a code bug that prevented it runnning in OfficeScrubScenario
-#
 
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
-	write-host "removing all Office versions"
- <#
- 	### Download SaRa Office Uninstall script ###
-	write-host "Downloading SaRa Office Removal Tool"
-	
-	# Download Source
-	#This fork of the SaRa Enterprise tool has a bug fix so that the OfficeScrubScenario will run
-		# and is set to do OfficeScrubScenario
-	$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
-	# Set Save Directory
-	$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
-	#Download the file
-	write-host "Downloading $destination"
-	$attempt = 1
-	# this loop inserted to allow for unstable internet connection failing the Download
-	while($attempt -le 5) {
-		write-host "Download Attempt: $attempt"
-		if (test-path -path $destination) {remove-item -path $destination}
-		try {
-			Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
-			write-host "Download Complete"
-			break
+	write-host "removing  Office versions and Languages"
+
+	#This gets the list of installed Office languages from the Registry Office Inventory
+ 	$AllLanguages = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeCulture'
+  
+	#This gets a list of all installed Office products from the Office inventory
+ 	$AllProducts = get-itempropertyvalue -path HKLM:\SOFTWARE\Microsoft\Office\ClickToRun\Inventory\Office\16.0 'OfficeProductReleaseIds'
+## Alternatively $AllProducts can be set manually for specific Product versions if desired
+## $AllProducts = "O365HomePremRetail,OneNoteFreeRetail"
+
+	$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
+	foreach ($Product in $AllVersions) {
+		foreach($Language in $AllLanguages){
+			write-host "$Product:$Language"
+			Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=$($Product).16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
+			Start-Sleep -Seconds 5
 		}
-		Catch {
-			write-host "Download failed - retry"
-			$attempt++
-			start-sleep 10
-			ping www.github.com
-		}
-	}
-
-	#Run the SaraRemoval script
-	invoke-expression -command $destination -ErrorAction Continue
- #>
-##Remove Home and pro versions of Office
-$OSInfo = Get-WmiObject -Class Win32_OperatingSystem
-$AllLanguages = $OSInfo.MUILanguages
-
-
-$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-foreach($Language in $AllLanguages){
-write-host "O365ProPlusRetail:$Language"
-Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365ProPlusRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-Start-Sleep -Seconds 5
+ 	}
 }
-$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-foreach($Language in $AllLanguages){
-write-host "O365HomePremRetail:$Language"
-Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=O365HomePremRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-Start-Sleep -Seconds 5
-}
-
-$ClickToRunPath = "C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe"
-foreach($Language in $AllLanguages){
-write-host "OneNoteFreeRetail:$Language"
-Start-Process $ClickToRunPath -ArgumentList "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteFreeRetail.16_$($Language)_x-none culture=$($Language) version.16=16.0 DisplayLevel=False" -Wait
-Start-Sleep -Seconds 5
-}} else {
+else {
 	write-host "No ClickToRun Office versions found"
 }
 
