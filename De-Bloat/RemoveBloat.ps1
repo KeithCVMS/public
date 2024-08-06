@@ -2142,8 +2142,7 @@ write-host "safeconnall:"$Safeconnects
 ForEach ($sc in $safeconnects) {
     If ($sc.UninstallString) {
 write-host "safecon:"$sc.uninstallstring
-$sc.Uninstallstring + " -s"
-cmd.exe /c $sc.UninstallString /quiet /norestart
+cmd.exe /c $sc.UninstallString /quiet /norestart -s
     }
 }
 ##
