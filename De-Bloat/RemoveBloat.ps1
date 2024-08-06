@@ -2065,9 +2065,11 @@ $destination = 'C:\ProgramData\Debloat\mcafee.zip'
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 
 write-host "Removing McAfee C:\ProgramData\Debloat\Mccleanup.exe"
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 # Automate Removal and kill services
 start-process "C:\ProgramData\Debloat\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 
 ###New MCCleanup
 ### Download McAfee Consumer Product Removal Tool ###
@@ -2102,10 +2104,11 @@ New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
 
 write-host "Removing McAfee C:\ProgramData\Debloat\mcnew\Mccleanup.exe"
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 # Automate Removal and kill services
 start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
-
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 $InstalledPrograms = $allstring | Where-Object {($_.Name -like "*McAfee*")}
 $InstalledPrograms | ForEach-Object {
 
@@ -2136,6 +2139,8 @@ write-host "mckillelse:"$string2
 }
 
 ##Remove Safeconnect
+write-host "remove safeconnects"
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 $safeconnects = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object { $_.DisplayName -match "McAfee Safe Connect" } | Select-Object -Property UninstallString
 write-host "safeconnall:"$Safeconnects
 
@@ -2145,6 +2150,8 @@ write-host "safecon:"$sc.uninstallstring
 cmd.exe /c $sc.UninstallString /quiet /norestart -s
     }
 }
+write-host "done safeconnects"
+Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 ##
 ##remove some extra leftover Mcafee items from StartMenu-AllApps and uninstall registry keys
 ##
