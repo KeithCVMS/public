@@ -118,6 +118,8 @@ param (
 
 ##Elevate if needed
 
+Process {
+	
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')) {
     Write-Host "You didn't run this script as an Administrator. This script will self elevate to run as an Administrator and continue."
     Start-Sleep 1
@@ -2062,7 +2064,7 @@ $destination = 'C:\ProgramData\Debloat\mcafee.zip'
   
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 
-write-host "Removing McAfee"
+write-host "Removing McAfee C:\ProgramData\Debloat\Mccleanup.exe"
 # Automate Removal and kill services
 start-process "C:\ProgramData\Debloat\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
@@ -2099,7 +2101,7 @@ $destination = 'C:\ProgramData\Debloat\mcafeenew.zip'
 New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
 Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
 
-write-host "Removing McAfee"
+write-host "Removing McAfee C:\ProgramData\Debloat\mcnew\Mccleanup.exe"
 # Automate Removal and kill services
 start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
@@ -2320,5 +2322,6 @@ write-host "Completed"
 Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
 
 Stop-Transcript
+Exit 0
 
-Exit
+		 }
