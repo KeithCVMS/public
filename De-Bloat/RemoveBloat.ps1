@@ -2032,7 +2032,8 @@ foreach($obj32 in $InstalledSoftware32){
 
 if ($mcafeeinstalled -eq "true") {
     Write-Host "McAfee detected"
-    #Remove McAfee bloat
+$ErrorActionPreference = 'Continue'
+#Remove McAfee bloat
 ##McAfee
 ### Download McAfee Consumer Product Removal Tool ###
 write-host "Downloading McAfee Removal Tool"
