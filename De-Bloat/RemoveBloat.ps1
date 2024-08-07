@@ -2011,7 +2011,7 @@ if (Test-Path $lenovonow) {
 ############################################################################################################
 
 #McAfee
-
+$ErrorActionPreference = 'Continue'
 write-host "Detecting McAfee"
 $mcafeeinstalled = "false"
 $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -2032,7 +2032,7 @@ foreach($obj32 in $InstalledSoftware32){
 
 if ($mcafeeinstalled -eq "true") {
     Write-Host "McAfee detected"
-$ErrorActionPreference = 'Continue'
+
 #Remove McAfee bloat
 ##McAfee
 ### Download McAfee Consumer Product Removal Tool ###
@@ -2259,7 +2259,7 @@ $blacklistapps = @(
 ##Remove Chrome
 $chrome32path = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome"
 
-if ($null -ne $chrome32path) {
+if (test-path $chrome32path) {
 
 $versions = (Get-ItemProperty -path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome').version
 ForEach ($version in $versions) {
