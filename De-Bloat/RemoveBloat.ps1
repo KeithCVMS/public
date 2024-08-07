@@ -2067,7 +2067,7 @@ Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 write-host "Removing McAfee C:\ProgramData\Debloat\Mccleanup.exe"
 Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 # Automate Removal and kill services
-start-process "C:\ProgramData\Debloat\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
+start-process "C:\ProgramData\Debloat\Mccleanup.exe" -Wait -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
 Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 
@@ -2106,7 +2106,7 @@ Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -For
 write-host "Removing McAfee C:\ProgramData\Debloat\mcnew\Mccleanup.exe"
 Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 # Automate Removal and kill services
-start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
+start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -Wait -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
 write-host "McAfee Removal Tool has been run"
 Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 $InstalledPrograms = $allstring | Where-Object {($_.Name -like "*McAfee*")}
@@ -2142,7 +2142,7 @@ write-host "mckillelse:"$string2
 write-host "remove safeconnects"
 Get-Date -Format "yyyy-MMM-dd HH:mm:ss"
 $safeconnects = Get-ChildItem -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall, HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall | Get-ItemProperty | Where-Object { $_.DisplayName -match "McAfee Safe Connect" } | Select-Object -Property UninstallString
-write-host "safeconnall:"$Safeconnects
+write-host "safeconnall:"$safeconnects
 
 ForEach ($sc in $safeconnects) {
     If ($sc.UninstallString) {
