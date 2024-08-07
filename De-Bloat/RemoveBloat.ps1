@@ -2273,7 +2273,7 @@ Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe
 
 $chromepath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome"
 
-if ($null -ne $chromepath) {
+if (test-path $chromepath) {
 
 $versions = (Get-ItemProperty -path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome').version
 ForEach ($version in $versions) {
