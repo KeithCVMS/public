@@ -118,7 +118,7 @@ param (
 
 ##Elevate if needed
 
-Process {
+
 	
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')) {
     Write-Host "You didn't run this script as an Administrator. This script will self elevate to run as an Administrator and continue."
@@ -2331,5 +2331,3 @@ Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
 
 Stop-Transcript
 Exit 0
-
-		 }
