@@ -139,8 +139,9 @@ if ($currentWU -eq 1) {
         Write-Host "$ts Getting $_ updates."        
         ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
 #            if (!$_.EulaAccepted) { $_.AcceptEula() }
-		$_.EulaAccepted = $true
-		if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
+#		$_.EulaAccepted = $true
+            if (!$_.EulaAccepted) { $_.EulaAccepted = $true }
+	    if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
 
         if ($WUUpdates.Count -ge 1) {
