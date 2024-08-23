@@ -26,6 +26,7 @@
 
 .RELEASENOTES
 Version CVMMPA: change tag and log directories to CVMMPA
+Version 1.10: Fixed AcceptEula logic.
 Version 1.9:  Added -ExcludeUpdates switch.
 Version 1.8:  Added logic to pass the -ExcludeDrivers switch when relaunching as 64-bit.
 Version 1.7:  Switched to Windows Update COM objects.
@@ -38,7 +39,7 @@ Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
 KH changes	inclusion of NETFX3 install here rather than in AutopilotBranding
 			part of cahnge to call updateos from intune platform script rather than win32
-   		if (!$_.EulaAccepted) { $_.AcceptEula() } patch courtesy mdmplayground
+   		
 			
 #>
 
@@ -138,10 +139,8 @@ if ($currentWU -eq 1) {
         $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Write-Host "$ts Getting $_ updates."        
         ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
-#            if (!$_.EulaAccepted) { $_.AcceptEula() }
-#		$_.EulaAccepted = $true
-            if (!$_.EulaAccepted) { $_.EulaAccepted = $true }
-	    if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
+            if (!$_.EulaAccepted) { $_.AcceptEula() }
+            if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
 
         if ($WUUpdates.Count -ge 1) {
@@ -179,8 +178,6 @@ if ($currentWU -eq 1) {
         Write-Host "$ts Windows Update indicated that no reboot is required."
     }
 
-	Add-Content -Path "$($env:ProgramData)\CVMMPA\UpdateOS.tag" -Value "Completed Script $(get-date)"
-
     # For whatever reason, the reboot needed flag is not always being properly set.  So we always want to force a reboot.
     # If this script (as an app) is being used as a dependent app, then a hard reboot is needed to get the "main" app to
     # install.
@@ -198,13 +195,11 @@ if ($currentWU -eq 1) {
     elseif ($Reboot -eq "Delayed") {
         Write-Host "$ts Rebooting with a $RebootTimeout second delay"
         & shutdown.exe /r /t $RebootTimeout /c "Rebooting to complete the installation of Windows updates."
-        Stop-Transcript
-		Exit 0
+        Exit 0
     }
     else {
         Write-Host "$ts Skipping reboot based on Reboot parameter (None)"
-        Stop-Transcript
-		Exit 0
+        Exit 0
     }
 	
 Stop-Transcript
