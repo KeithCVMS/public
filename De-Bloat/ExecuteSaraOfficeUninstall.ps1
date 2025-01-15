@@ -411,7 +411,8 @@ Write-Host ">>> `$SaraScenarioArgument = $SaraScenarioArgument"
 exit
 }
 # Check for the existence and spelling of the required -Script switch
-<# if ($SaraScenarioArgument -notlike "*-script*")
+<##### block commented out Keith Hay
+if ($SaraScenarioArgument -notlike "*-script*")
 {
 Write-Host ">>>"
 Write-Host ">>> Required switch -Script missing or misspelled in `$SaraScenarioArgument"
@@ -419,7 +420,8 @@ Write-Host ">>>"
 Write-Host ">>> `$SaraScenarioArgument = $SaraScenarioArgument"
 exit
 }
- #># Check for the required -S switch
+#####> block commented out Keith Hay
+# Check for the required -S switch
 if ($SaraScenarioArgument -notlike "*-s *")
 {
 Write-Host ">>>"
