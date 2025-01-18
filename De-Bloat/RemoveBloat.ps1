@@ -139,6 +139,7 @@ Change KH fork	- Specific tenant mods
 							so subsequent M365 MSTeams installs work reliably (otherwise sometimes Teams installs and sometimes not)
 						- added -allusers switches for all remove-Appx commands
 						- added 5x retry loops for gethub ges to allow for unstable internet connections
+					- added Asus specific debloat (small)
 N/A
 #>
 
@@ -168,6 +169,7 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #no errors throughout
 $ErrorActionPreference = 'silentlycontinue'
 
+write-output "****************************VERSION 5_1_2KH***********************"
 
 #Create Folder
 $DebloatFolder = "C:\ProgramData\Debloat"
@@ -1430,6 +1432,60 @@ write-output "Detecting Manufacturer"
 $details = Get-CimInstance -ClassName Win32_ComputerSystem
 $manufacturer = $details.Manufacturer
 
+if ($manufacturer -like "*ASUS*") {
+	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and vivobook(consumer) laptops in my lab currently
+    write-output "ASUS detected"
+    #Remove ASUS bloat
+	
+    ##ASUS Specific 
+	##ASUS OEMcode = B9ECED6F ??
+	
+	
+    ##You can decide which, if any, you wish to delete by commenting out appropriate lines here
+	$UninstallPrograms = @(
+		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
+		"B9ECED6F.ASUSPCAssistant"						#MyAsus App on Expertbook, Vivobook
+		"AppUp.IntelGraphicsExperience"					#Intel Graphic mgmt utility	on Expertbook, Vivobook
+		"AppUp.IntelManagementandSecurityStatus"		#Intel Security mgmt utility on Expertbook
+		"DolbyLaboratories.DolbyAccess"					#Dolby sound utilities on Expertbook, vivobook
+		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM"	#Dolby sound utilities on Expertbook, vivobook	
+		"DrivewintechTechnologyCo.DiracAudoManager"		#sound mgmt utility in Vivobook
+		"IntelligoTechnologyInc.541271065CCE8"			#suite of voice/microphone AI and Meeting utilities that Asus packages in Expertbook
+    )	
+
+    $UninstallPrograms = $UninstallPrograms | Where-Object { $appstoignore -notcontains $_ }
+
+    $InstalledPrograms = $allstring | Where-Object { $UninstallPrograms -contains $_.Name }
+    foreach ($app in $UninstallPrograms) {
+
+        if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app -ErrorAction SilentlyContinue) {
+            Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app | Remove-AppxProvisionedPackage -Online
+            write-output "Removed provisioned package for $app."
+        }
+        else {
+            write-output "Provisioned package for $app not found."
+        }
+
+        if (Get-AppxPackage -allusers -Name $app -ErrorAction SilentlyContinue) {
+            Get-AppxPackage -allusers -Name $app | Remove-AppxPackage -AllUsers
+            write-output "Removed $app."
+        }
+        else {
+            write-output "$app not found."
+        }
+
+        UninstallAppFull -appName $app
+
+    }
+
+    ##Belt and braces, remove via CIM too
+    foreach ($program in $UninstallPrograms) {
+        Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
+    }
+
+
+} #end ASUS specific
+
 if ($manufacturer -like "*HP*") {
     write-output "HP detected"
     #Remove HP bloat
@@ -2267,7 +2323,7 @@ if ($IsOOBEComplete -eq 0) {
 
     }
 
-<# 
+<#  commented out KH
 $xml = @"
 <Configuration>
   <Display Level="None" AcceptEULA="True" />
@@ -2289,7 +2345,8 @@ Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicPar
 
 ##Run it
 Start-Process -FilePath "C:\ProgramData\Debloat\odt.exe" -ArgumentList "/configure C:\ProgramData\Debloat\o365.xml" -Wait
- #>
+ #> Commented out KH
+
 #KH Remove ANY pre-installed versions of Office
 # This was changed to use the MS SaRa Enterprise tool as MsTeamsWork installs work unreliably if there is ANY remnant of an Office install
 # the SaRa tool was forked and patched for a code bug that prevented it runnning in OfficeScrubScenario
