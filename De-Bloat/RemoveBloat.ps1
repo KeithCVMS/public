@@ -169,7 +169,7 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 #no errors throughout
 $ErrorActionPreference = 'silentlycontinue'
 
-write-output "****************************VERSION 5_1_2KH***********************"
+
 
 #Create Folder
 $DebloatFolder = "C:\ProgramData\Debloat"
@@ -214,10 +214,12 @@ Else {
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 
+write-host "****************************VERSION 5_1_2KH***********************"
+
 #KH write out msg for pre-provisioning run"
 	if ($CurrProf -like "*systemprofile*") {
 		write-host "AutoPilot PreProvisioning run"
-	}
+ }
 #KH Define PS-Drives for non-default registry paths if not present on system
 	if (!(Test-Path HKCR:)) {
 		New-PSDrive -PSProvider Registry -Name HKCR -Root HKEY_CLASSES_ROOT | Out-Null
