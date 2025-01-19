@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 1.8
+.VERSION 1.10
 
 .GUID 07e4ef9f-8341-4dc4-bc73-fc277eb6b4e6
 
@@ -201,8 +201,6 @@ if ($currentWU -eq 1) {
         Write-Host "$ts Skipping reboot based on Reboot parameter (None)"
         Exit 0
     }
-	
 Stop-Transcript
 Exit 0
-
 }
