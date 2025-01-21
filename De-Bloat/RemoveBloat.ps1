@@ -241,16 +241,16 @@ $WhitelistedApps = @(
     'Microsoft.ScreenSketch',
     'Microsoft.Paint3D',
     'Microsoft.WindowsCalculator',
-    'Microsoft.WindowsStore',
+#    'Microsoft.WindowsStore',			##kh already in bloatware
     'Microsoft.Windows.Photos',
     'CanonicalGroupLimited.UbuntuonWindows',
     'Microsoft.MicrosoftStickyNotes',
     'Microsoft.MSPaint',
-    'Microsoft.WindowsCamera',
+#    'Microsoft.WindowsCamera',			##kh already in bloatware
     '.NET Framework',
     'Microsoft.HEIFImageExtension',
     'Microsoft.ScreenSketch',
-    'Microsoft.StorePurchaseApp',
+#    'Microsoft.StorePurchaseApp',		##kh already in bloatware
     'Microsoft.VP9VideoExtensions',
     'Microsoft.WebMediaExtensions',
     'Microsoft.WebpImageExtension',
@@ -268,11 +268,11 @@ $WhitelistedApps = @(
     'Dell Display Manager 2.1',
     'Dell Display Manager 2.2',
     'Dell Peripheral Manager',
-#   'MSTeams',						##kh already in bloatware
-    'Microsoft.Paint',
-#   'Microsoft.OutlookForWindows',	##kh moved to bloatware
+#   'MSTeams',							##kh already in bloatware
+#    'Microsoft.Paint',					##kh in list twice
+#   'Microsoft.OutlookForWindows',		##kh moved to bloatware
     'Microsoft.WindowsTerminal',
-    'Microsoft.MicrosoftEdge.Stable'
+#    'Microsoft.MicrosoftEdge.Stable'	##kh already in bloatware
 )
 ##If $customwhitelist is set, split on the comma and add to whitelist
 if ($customwhitelist) {
