@@ -268,9 +268,9 @@ $WhitelistedApps = @(
     'Dell Display Manager 2.1',
     'Dell Display Manager 2.2',
     'Dell Peripheral Manager',
-    'MSTeams',						##whykh
+#   'MSTeams',						##kh already in bloatware
     'Microsoft.Paint',
-    'Microsoft.OutlookForWindows',	##whykh
+#   'Microsoft.OutlookForWindows',	##kh moved to bloatware
     'Microsoft.WindowsTerminal',
     'Microsoft.MicrosoftEdge.Stable'
 )
@@ -447,6 +447,8 @@ $Bloatware = @(
 "MSTeams"
 "RealtimeboardInc.RealtimeBoard"
 "SpotifyAB.SpotifyMusic"
+"Microsoft.OutlookForWindows"	##kh moved from whitelist
+
 #Optional: Typically not removed but you can if you need to for some reason
 #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
 #"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
@@ -465,6 +467,7 @@ $Bloatware = @(
 #"Microsoft.PowerAutomateDesktop"
 )
 
+$ErrorActionPreference = 'Continue'
 
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -499,6 +502,7 @@ foreach ($appxapp in $appxinstalled) {
 
 
 }
+$ErrorActionPreference = 'SilentlyContinue'
 
 
 ############################################################################################################
@@ -2390,7 +2394,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	write-host "No ClickToRun Office versions found"
 }
 
-write-host " Anything else removal complete"
+write-host " Anything else removal complete $(get-date)"
 
 ##KH
 
@@ -2401,7 +2405,7 @@ else {
 
 }
 
-write-output "Completed"
+write-output "Completed $(get-date)"
 #KH write out completion time to tag File
 	Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
 ##KH
