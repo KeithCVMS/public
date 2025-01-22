@@ -1441,13 +1441,14 @@ $manufacturer = $details.Manufacturer
 if ($manufacturer -like "*ASUS*") {
 	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and vivobook(consumer) laptops in my lab currently
     write-output "ASUS detected"
-    #Remove ASUS bloat
+    write-output ""
+	#Remove ASUS bloat
 	
     ##ASUS Specific 
 	##ASUS OEMcode = B9ECED6F ??
 	
 	
-    ##You can decide which, if any, you wish to delete by commenting out appropriate lines here
+    ##You can decide which, if any, you wish to keep by including in customwhitelist
 	$UninstallPrograms = @(
 		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
 		"B9ECED6F.ASUSPCAssistant"						#MyAsus App on Expertbook, Vivobook
