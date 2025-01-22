@@ -271,7 +271,7 @@ $WhitelistedApps = @(
 #   'MSTeams',							##kh already in bloatware
 #    'Microsoft.Paint',					##kh in list twice
 #   'Microsoft.OutlookForWindows',		##kh moved to bloatware
-    'Microsoft.WindowsTerminal',
+    'Microsoft.WindowsTerminal'			##kh remove trailing ,
 #    'Microsoft.MicrosoftEdge.Stable'	##kh already in bloatware
 )
 ##If $customwhitelist is set, split on the comma and add to whitelist
