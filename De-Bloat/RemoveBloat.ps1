@@ -183,51 +183,51 @@ Else {
     Write-Output "The folder $DebloatFolder was successfully created."
 }
 
+Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
+
 #KH This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
 #KH It can be used in a similar method as the detection mechanism for Win32apps in Intune
 #KH      if coupled with a companion launching script 
 #KH This section EXITS if the script has been previouly run in a preprov environment 
 #KH      (based on the default user running the script).
-	$DebloatTag = "$DebloatFolder\Debloat.tag"
+$DebloatTag = "$DebloatFolder\Debloat.tag"
 
-	$Env:UserName
-	$CurrProf = $Env:Userprofile
+$Env:UserName
+$CurrProf = $Env:Userprofile
 
-	If (Test-Path $DebloatTag) {
-		if ($CurrProf -like "*systemprofile*") {
-			# This prevents the script from running mutiple times during pre-provisioning
-			# but still allows it run multiple times if being run in a user Context
-			# multiple attempts are recorded in the tag file
-			write-host "Script has already been run. Exiting"
-			Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
-			Exit 0
-		}
-		Else {
-			Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
-		}
+If (Test-Path $DebloatTag) {
+	if ($CurrProf -like "*systemprofile*") {
+		# This prevents the script from running mutiple times during pre-provisioning
+		# but still allows it run multiple times if being run in a user Context
+		# multiple attempts are recorded in the tag file
+		write-host "Script has already been run. Exiting"
+		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
+		Exit 0
 	}
 	Else {
-		Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+		Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
 	}
-##KH
-
-Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
-
-write-host "****************************VERSION 5_1_2KH***********************"
+}
+Else {
+	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+}
+##KH S
 
 #KH write out msg for pre-provisioning run"
-	if ($CurrProf -like "*systemprofile*") {
-		write-host "AutoPilot PreProvisioning run"
- }
+write-host "****************************VERSION 5_1_2KH***********************"
+
+if ($CurrProf -like "*systemprofile*") {
+	write-host "AutoPilot PreProvisioning run"
+}
 #KH Define PS-Drives for non-default registry paths if not present on system
-	if (!(Test-Path HKCR:)) {
-		New-PSDrive -PSProvider Registry -Name HKCR -Root HKEY_CLASSES_ROOT | Out-Null
-	}
-	if (!(Test-Path HKU:)) {
-		New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
-	}
-##KH
+if (!(Test-Path HKCR:)) {
+	New-PSDrive -PSProvider Registry -Name HKCR -Root HKEY_CLASSES_ROOT | Out-Null
+}
+if (!(Test-Path HKU:)) {
+	New-PSDrive -PSProvider Registry -Name HKU -Root HKEY_USERS | Out-Null
+}
+##KH E 
 
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
@@ -276,7 +276,8 @@ $WhitelistedApps = @(
 )
 ##If $customwhitelist is set, split on the comma and add to whitelist
 if ($customwhitelist) {
-    $customWhitelistApps = $customwhitelist -split ","
+    write-host "CustomWhiteList: $customwhitelist"	##KH
+	$customWhitelistApps = $customwhitelist -split ","
     foreach ($whitelistapp in $customwhitelistapps) {
         ##Add to the array
         $WhitelistedApps += $whitelistapp
@@ -359,27 +360,27 @@ $appstoignore = $WhitelistedApps += $NonRemovable
 ##Bloat list for future reference
 $Bloatware = @(
 #Unnecessary Windows 10/11 AppX Apps
-"*ActiproSoftwareLLC*"
-"*AdobeSystemsIncorporated.AdobePhotoshopExpress*"
-"*BubbleWitch3Saga*"
-"*CandyCrush*"
-"*DevHome*"
-"*Disney*"
-"*Dolby*"
-"*Duolingo-LearnLanguagesforFree*"
-"*EclipseManager*"
-"*Facebook*"
-"*Flipboard*"
-"*gaming*"
-"*Minecraft*"
-"*Office*"
-"*PandoraMediaInc*"
-"*Royal Revolt*"
-"*Speed Test*"
-"*Spotify*"
-"*Sway*"
-"*Twitter*"
-"*Wunderlist*"
+#"*ActiproSoftwareLLC*"								##kh wildcards wont work
+#"*AdobeSystemsIncorporated.AdobePhotoshopExpress*"	##kh wildcards wont work
+#"*BubbleWitch3Saga*"								##kh wildcards wont work
+#"*CandyCrush*"										##kh wildcards wont work
+#"*DevHome*"										##kh wildcards wont work
+#"*Disney*"											##kh wildcards wont work
+#"*Dolby*"											##kh wildcards wont work
+#"*Duolingo-LearnLanguagesforFree*"					##kh wildcards wont work
+#"*EclipseManager*"									##kh wildcards wont work
+#"*Facebook*"										##kh wildcards wont work
+#"*Flipboard*"										##kh wildcards wont work
+#"*gaming*"											##kh wildcards wont work
+#"*Minecraft*"										##kh wildcards wont work
+#"*Office*"											##kh wildcards wont work
+#"*PandoraMediaInc*"								##kh wildcards wont work
+#"*Royal Revolt*"									##kh wildcards wont work
+#"*Speed Test*"										##kh wildcards wont work
+#"*Spotify*"										##kh wildcards wont work
+#"*Sway*"											##kh wildcards wont work
+#"*Twitter*"										##kh wildcards wont work
+#"*Wunderlist*"										##kh wildcards wont work
 "AD2F1837.HPPrinterControl"
 "AppUp.IntelGraphicsExperience"
 "C27EB4BA.DropboxOEM*"
@@ -423,7 +424,7 @@ $Bloatware = @(
 "Microsoft.Whiteboard"
 "Microsoft.Windows.DevHome"
 "Microsoft.WindowsAlarms"
-#"Microsoft.WindowsCamera"
+"Microsoft.WindowsCamera"
 "Microsoft.windowscommunicationsapps"
 "Microsoft.WindowsFeedbackHub"
 "Microsoft.WindowsMaps"
@@ -447,23 +448,23 @@ $Bloatware = @(
 "MSTeams"
 "RealtimeboardInc.RealtimeBoard"
 "SpotifyAB.SpotifyMusic"
-"Microsoft.OutlookForWindows"	##kh moved from whitelist
+"Microsoft.OutlookForWindows"		##kh moved from whitelist
 
 #Optional: Typically not removed but you can if you need to for some reason
-#"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
-#"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
-#"*Microsoft.BingWeather*"
-#"*Microsoft.MSPaint*"
-#"*Microsoft.MicrosoftStickyNotes*"
-#"*Microsoft.Windows.Photos*"
-#"*Microsoft.WindowsCalculator*"
-#"*Microsoft.WindowsStore*"
+#"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"	##kh wildcards wont work
+#"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"	##kh wildcards wont work
+#"*Microsoft.BingWeather*"										##kh wildcards wont work
+#"*Microsoft.MSPaint*"											##kh wildcards wont work
+#"*Microsoft.MicrosoftStickyNotes*"								##kh wildcards wont work
+#"*Microsoft.Windows.Photos*"									##kh wildcards wont work
+#"*Microsoft.WindowsCalculator*"								##kh wildcards wont work
+#"*Microsoft.WindowsStore*"										##kh wildcards wont work
 #"Microsoft.Office.Todo.List"
-#"Microsoft.Whiteboard"
-#"Microsoft.WindowsCamera"
-#"Microsoft.WindowsSoundRecorder"
-#"Microsoft.YourPhone"
-#"Microsoft.Todos"
+#"Microsoft.Whiteboard"											##kh in bloatware above
+#"Microsoft.WindowsCamera"										##kh in bloatware above
+#"Microsoft.WindowsSoundRecorder"								##kh in bloatware above
+#"Microsoft.YourPhone"											##kh in bloatware above
+#"Microsoft.Todos"												##kh in bloatware above
 #"Microsoft.PowerAutomateDesktop"
 )
 
