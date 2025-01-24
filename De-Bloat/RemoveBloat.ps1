@@ -183,8 +183,6 @@ Else {
     Write-Output "The folder $DebloatFolder was successfully created."
 }
 
-Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
-
 #KH This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
 #KH It can be used in a similar method as the detection mechanism for Win32apps in Intune
@@ -213,6 +211,8 @@ Else {
 	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
 }
 ##KH S
+
+Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 
 #KH write out msg for pre-provisioning run"
 write-host "****************************VERSION 5_1_2KH***********************"
