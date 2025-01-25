@@ -167,8 +167,7 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 }
 
 #no errors throughout
-$ErrorActionPreference = 'silentlycontinue'
-
+$ErrorActionPreference = 'SilentlyContinue'
 
 
 #Create Folder
@@ -192,6 +191,7 @@ Else {
 $DebloatTag = "$DebloatFolder\Debloat.tag"
 
 $Env:UserName
+$UsrNm = $Env:UserName
 $CurrProf = $Env:Userprofile
 
 If (Test-Path $DebloatTag) {
@@ -200,15 +200,15 @@ If (Test-Path $DebloatTag) {
 		# but still allows it run multiple times if being run in a user Context
 		# multiple attempts are recorded in the tag file
 		write-host "Script has already been run. Exiting"
-		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - Exiting"
+		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - $CurrProf - $UsrNm - Exiting"
 		Exit 0
 	}
 	Else {
-		Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+		Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date) - $CurrProf - $UsrNm"
 	}
 }
 Else {
-	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date)"
+	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date) - $CurrProf - $UsrNm"
 }
 ##KH S
 
@@ -476,7 +476,8 @@ foreach ($appxprov in $provisioned) {
     $displayname = $appxprov.DisplayName
     write-output "Removing $displayname AppX Provisioning Package"
     try {
-        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue
+#        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue
+        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction Continue
         write-output "Removed $displayname AppX Provisioning Package"
     }
     catch {
@@ -493,16 +494,16 @@ foreach ($appxapp in $appxinstalled) {
     write-output "$displayname AppX Package exists"
     write-output "Removing $displayname AppX Package"
     try {
-        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
+ #       Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
+        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction Continue
         write-output "Removed $displayname AppX Package"
     }
     catch {
         write-output "$displayname AppX Package does not exist"
     }
 
-
-
 }
+
 $ErrorActionPreference = 'SilentlyContinue'
 
 
