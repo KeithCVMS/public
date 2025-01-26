@@ -39,6 +39,7 @@ Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
 KH changes	inclusion of NETFX3 install here rather than in AutopilotBranding
 			part of cahnge to call updateos from intune platform script rather than win32
+   		if (!$_.EulaAccepted) { $_.AcceptEula() } patch courtesy mdmplayground
    		
 			
 #>
@@ -139,7 +140,8 @@ if ($currentWU -eq 1) {
         $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Write-Host "$ts Getting $_ updates."        
         ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
-            if (!$_.EulaAccepted) { $_.AcceptEula() }
+#            if (!$_.EulaAccepted) { $_.AcceptEula() }	##KH fix for EULA
+            if (!$_.EulaAccepted) { $_.EulaAccepted = $true }
             if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
 
@@ -182,7 +184,8 @@ if ($currentWU -eq 1) {
     # If this script (as an app) is being used as a dependent app, then a hard reboot is needed to get the "main" app to
     # install.
     $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
-    if ($Reboot -eq "Hard") {
+
+ if ($Reboot -eq "Hard") {
         Write-Host "$ts Exiting with return code 1641 to indicate a hard reboot is needed."
         Stop-Transcript
         Exit 1641
@@ -195,10 +198,12 @@ if ($currentWU -eq 1) {
     elseif ($Reboot -eq "Delayed") {
         Write-Host "$ts Rebooting with a $RebootTimeout second delay"
         & shutdown.exe /r /t $RebootTimeout /c "Rebooting to complete the installation of Windows updates."
+        Stop-Transcript
         Exit 0
     }
     else {
         Write-Host "$ts Skipping reboot based on Reboot parameter (None)"
+        Stop-Transcript
         Exit 0
     }
 Stop-Transcript
