@@ -1247,7 +1247,7 @@ Remove-Item C:\Windows\Temp\SetACL.exe -recurse
 #                                        Disable Edge Surf Game                                            #
 #                                                                                                          #
 ############################################################################################################
-$surf = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge"
+$surf = "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
 If (!(Test-Path $surf)) {
     New-Item $surf
 }
