@@ -2229,10 +2229,10 @@ if ($mcafeeinstalled -eq "true") {
     if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
         Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
     }
-    #Interesting emough, this producese an error, but still deletes the package anyway
-    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
-    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
-    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
+#    #Interesting emough, this producese an error, but still deletes the package anyway
+#    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
+#    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
+#    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 }
 
 
