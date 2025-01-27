@@ -140,8 +140,8 @@ if ($currentWU -eq 1) {
         $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Write-Host "$ts Getting $_ updates."        
         ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
-#            if (!$_.EulaAccepted) { $_.AcceptEula() }	##KH fix for EULA
-            if (!$_.EulaAccepted) { $_.EulaAccepted = $true }
+            if (!$_.EulaAccepted) { $_.AcceptEula() }	
+#            if (!$_.EulaAccepted) { $_.EulaAccepted = $true } ##KH fix for EULA
             if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
 
