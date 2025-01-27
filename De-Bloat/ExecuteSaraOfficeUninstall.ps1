@@ -420,7 +420,7 @@ Write-Host ">>>"
 Write-Host ">>> `$SaraScenarioArgument = $SaraScenarioArgument"
 exit
 }
-#####> block commented out Keith Hay
+#####> #block commented out Keith Hay
 # Check for the required -S switch
 if ($SaraScenarioArgument -notlike "*-s *")
 {
