@@ -53,6 +53,7 @@ This script uses the Windows Update COM objects to install the latest cumulative
 .\UpdateOS.ps1
 #>
 
+
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $False)] [ValidateSet('Soft', 'Hard', 'None', 'Delayed')] [String] $Reboot = 'Soft',
@@ -60,6 +61,7 @@ Param(
     [Parameter(Mandatory = $False)] [switch] $ExcludeDrivers,
     [Parameter(Mandatory = $False)] [switch] $ExcludeUpdates
 )
+
 
 Process {
 
@@ -88,6 +90,11 @@ Process {
 
     # Main logic
     $script:needReboot = $false
+
+	$ci = Get-Computerinfo
+	write-host "OSversion:$($ci.OsName)"
+	write-host "OSBuild:$($ci.OsBuildNumber)"
+	write-host " "
 
 <# # Add logic to install NetFX here instead of in AutopilotBranding
 
@@ -137,15 +144,32 @@ if ($currentWU -eq 1) {
     $queries | ForEach-Object {
 
         $WUUpdates = New-Object -ComObject Microsoft.Update.UpdateColl
-        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+		$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Write-Host "$ts Getting $_ updates."        
-        ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
-            if (!$_.EulaAccepted) { $_.AcceptEula() }	
-#            if (!$_.EulaAccepted) { $_.EulaAccepted = $true } ##KH fix for EULA
+<#
+       ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
+            if (!$_.EulaAccepted) { $_.AcceptEula() }
             if ($_.Title -notmatch "Preview") { [void]$WUUpdates.Add($_) }
         }
+#>
+		$CandidateUpdates = ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates 
+		ForEach ($CandidateUpdate in $CandidateUpdates) {
+			write-host "Title:$($CandidateUpdate.Title)"
+			If ($CandidateUpdate.Title -notmatch "Preview") {
+				If ($CandidateUpdate | Get-Member EulaAccepted) {
+					if (!$CandidateUpdate.EulaAccepted) {
+						$CandidateUpdate.AcceptEula() 
+					} 
+				}
+				ForEach ($CandidateUpdateCategory in $CandidateUpdate.Categories) {
+					if ($CandidateUpdateCategory.CategoryID -ne "3689BDC8-B205-4AF4-8D4A-A63924C5E9D5" -and $CandidateUpdate -notin $WUUpdates) {
+						[void]$WUUpdates.Add($CandidateUpdate)
+					}
+				}
+			}
+		}
 
-        if ($WUUpdates.Count -ge 1) {
+		if ($WUUpdates.Count -ge 1) {
             $WUInstaller.ForceQuiet = $true
             $WUInstaller.Updates = $WUUpdates
             $WUDownloader.Updates = $WUUpdates
@@ -206,6 +230,7 @@ if ($currentWU -eq 1) {
         Stop-Transcript
         Exit 0
     }
+
 Stop-Transcript
 Exit 0
 }
