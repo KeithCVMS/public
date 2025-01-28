@@ -17,7 +17,7 @@
 .OUTPUTS
 C:\ProgramData\Debloat\Debloat.log
 .NOTES
-  Version:        5.1.2
+  Version:        5.1.4
   Author:         Andrew Taylor
   Twitter:        @AndrewTaylor_2
   WWW:            andrewstaylor.com
@@ -126,6 +126,9 @@ C:\ProgramData\Debloat\Debloat.log
   Change 10/12/2024 - Added registry keys to not display screens during OOBE when using Device prep (thanks Rudy)
   Change 07/01/2025 - Added spotlight removal keys
   Change 10/01/2025 - Added Lenovo Now
+  Change 21/01/2025 - Edge Surf game fix
+  Change 27/01/2025 - Added Logitech Download assistant
+  Change 27/01/2025 - Converted from CRLF to LF
 Change KH fork	- Specific tenant mods
 						- logic to use a tag file for sensing previous installs and preventing multiple executions during pre-provisioning
 					-General mods
@@ -167,7 +170,7 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 }
 
 #no errors throughout
-$ErrorActionPreference = 'SilentlyContinue'
+$ErrorActionPreference = 'silentlycontinue'
 
 
 #Create Folder
@@ -501,6 +504,8 @@ foreach ($appxapp in $appxinstalled) {
     catch {
         write-output "$displayname AppX Package does not exist"
     }
+
+
 
 }
 
@@ -1252,6 +1257,28 @@ If (!(Test-Path $surf)) {
     New-Item $surf
 }
 New-ItemProperty -Path $surf -Name 'AllowSurfGame' -Value 0 -PropertyType DWord
+
+
+############################################################################################################
+#                                       Remove Logitech Download Assistant                                 #
+#                                                                                                          #
+############################################################################################################
+$logi = "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+If (!(Test-Path $logi)) {
+    ##Delete the key
+    Remove-ItemProperty -Path "HKLM:\$logi" -Name "Logitech Download Assistant"
+    Write-Output "Logitech Download Assistant Registry key removed."
+
+}
+
+##Remove the dll
+$logidll = "C:\Windows\System32\LogiLDA.dll"
+if (Test-Path $logidll) {
+    Remove-Item $logidll -Force
+    Write-Output "Logitech Download Assistant DLL removed."
+} else {
+    Write-Output "Logitech Download Assistant DLL not found."
+}
 
 ############################################################################################################
 #                                       Grab all Uninstall Strings                                         #
@@ -2229,7 +2256,8 @@ if ($mcafeeinstalled -eq "true") {
     if (Test-Path -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS") {
         Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
     }
-#    #Interesting emough, this producese an error, but still deletes the package anyway
+write-output "Mcafee Removal all complete"
+#Interesting emough, this producese an error, but still deletes the package anyway
 #    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
 #    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
 #    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
@@ -2414,3 +2442,219 @@ write-output "Completed $(get-date)"
 ##KH
 
 Stop-Transcript
+							 
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+																  
+													  
+						   
