@@ -96,28 +96,6 @@ Process {
 	write-host "OSBuild:$($ci.OsBuildNumber)"
 	write-host " "
 
-<# # Add logic to install NetFX here instead of in AutopilotBranding
-
-$ci = get-computerinfo
-write-host "OSversion:$($ci.OsName)"
-write-host "OSBuild:$($ci.OsBuildNumber)"
-
-$currentWU = (Get-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ErrorAction Ignore).UseWuServer
-if ($currentWU -eq 1) {
-	write-host "Turning off WSUS"
-	Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU"  -Name "UseWuServer" -Value 0
-	Restart-Service wuauserv -force
-}
-write-host "Adding Windows feature: $_"
-#Add-WindowsCapability -Online -Name NetFX3~~~~ -ErrorAction SilentlyContinue | Out-Null
-#Add-WindowsCapability -Online -Name NetFX3~~~~ -ErrorAction Continue
-
-if ($currentWU -eq 1) {
-	write-host "Turning on WSUS"
-	Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU"  -Name "UseWuServer" -Value 1
-	Restart-Service wuauserv
-}
- #>
 #Now install OS Updates
     # Opt into Microsoft Update
     $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
