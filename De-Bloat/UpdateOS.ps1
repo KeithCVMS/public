@@ -107,7 +107,10 @@ Process {
     # Install all available updates
     $WUDownloader = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateDownloader()
     $WUInstaller = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateInstaller()
-    if ($ExcludeDrivers) {
+ 
+ $WUDownloader | Get-Member
+ 
+	if ($ExcludeDrivers) {
         # Updates only
         $queries = @("IsInstalled=0 and Type='Software'")
     }
@@ -131,6 +134,7 @@ Process {
         }
 #>
 		$CandidateUpdates = ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates 
+$candidateupdates | Get-Member
 		ForEach ($CandidateUpdate in $CandidateUpdates) {
 			write-host "Title:$($CandidateUpdate.Title)"
 			If ($CandidateUpdate.Title -notmatch "Preview") {
@@ -140,12 +144,15 @@ Process {
 					} 
 				}
 				ForEach ($CandidateUpdateCategory in $CandidateUpdate.Categories) {
+					write-host "Category:$($CandidateUpdateCategory.CategoryID)"
 					if ($CandidateUpdateCategory.CategoryID -ne "3689BDC8-B205-4AF4-8D4A-A63924C5E9D5" -and $CandidateUpdate -notin $WUUpdates) {
 						[void]$WUUpdates.Add($CandidateUpdate)
 					}
 				}
 			}
 		}
+
+$WUDownloader | Get-Member
 
 		if ($WUUpdates.Count -ge 1) {
             $WUInstaller.ForceQuiet = $true
@@ -210,5 +217,5 @@ Process {
     }
 
 Stop-Transcript
-Exit 0
+
 }
