@@ -108,7 +108,7 @@ Process {
     $WUDownloader = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateDownloader()
     $WUInstaller = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateInstaller()
  
- $WUDownloader | Get-Member
+# $WUDownloader | Get-Member
  
 	if ($ExcludeDrivers) {
         # Updates only
@@ -134,9 +134,9 @@ Process {
         }
 #>
 		$CandidateUpdates = ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates 
-$candidateupdates | Get-Member
+#$candidateupdates | Get-Member
 		ForEach ($CandidateUpdate in $CandidateUpdates) {
-			write-host "Title:$($CandidateUpdate.Title)"
+			write-host "TitleFound:$($CandidateUpdate.Title)"
 			If ($CandidateUpdate.Title -notmatch "Preview") {
 				If ($CandidateUpdate | Get-Member EulaAccepted) {
 					if (!$CandidateUpdate.EulaAccepted) {
@@ -144,16 +144,18 @@ $candidateupdates | Get-Member
 					} 
 				}
 				ForEach ($CandidateUpdateCategory in $CandidateUpdate.Categories) {
-					write-host "Category:$($CandidateUpdateCategory.CategoryID)"
 					if ($CandidateUpdateCategory.CategoryID -ne "3689BDC8-B205-4AF4-8D4A-A63924C5E9D5" -and $CandidateUpdate -notin $WUUpdates) {
+						write-host "TitleAdd:$($CandidateUpdate.Title)"
+						write-host "Category:$($CandidateUpdateCategory.CategoryID)"
 						[void]$WUUpdates.Add($CandidateUpdate)
 					}
 				}
 			}
 		}
 
-$WUDownloader | Get-Member
+#$WUDownloader | Get-Member
 
+		write-host "UpdatesToDo:$($WUUpdates.Count)"
 		if ($WUUpdates.Count -ge 1) {
             $WUInstaller.ForceQuiet = $true
             $WUInstaller.Updates = $WUUpdates
@@ -162,18 +164,19 @@ $WUDownloader | Get-Member
             if ($UpdateCount -ge 1) {
                 $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                 Write-Output "$ts Downloading $UpdateCount Updates"
-                foreach ($update in $WUInstaller.Updates) { Write-Output "$($update.Title)" }
+                foreach ($update in $WUDownloader.Updates) { Write-Output "Dwnld:$($update.Title)" }
                 $Download = $WUDownloader.Download()
             }
             $InstallUpdateCount = $WUInstaller.Updates.count
             if ($InstallUpdateCount -ge 1) {
                 $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                 Write-Output "$ts Installing $InstallUpdateCount Updates"
-                $Install = $WUInstaller.Install()
+                foreach ($update in $WUInstaller.Updates) { Write-Output "Inst:$($update.Title)" }
+				$Install = $WUInstaller.Install()
                 $ResultMeaning = ($Results | Where-Object { $_.ResultCode -eq $Install.ResultCode }).Meaning
                 Write-Output $ResultMeaning
                 $script:needReboot = $Install.RebootRequired
-            } 
+			}
         }
         else {
             Write-Output "No Updates Found"
