@@ -505,8 +505,6 @@ foreach ($appxapp in $appxinstalled) {
         write-output "$displayname AppX Package does not exist"
     }
 
-
-
 }
 
 $ErrorActionPreference = 'SilentlyContinue'
@@ -2212,11 +2210,14 @@ if ($mcafeeinstalled -eq "true") {
     write-output "McAfee Removal Tool has been run"
 
     $InstalledPrograms = $allstring | Where-Object { ($_.Name -like "*McAfee*") }
+write-output "AllString: $allstring"	#KH
+write-output "InstalledProg: $installedprograms"	#KH
     $InstalledPrograms | ForEach-Object {
 
         write-output "Attempting to uninstall: [$($_.Name)]..."
         $uninstallcommand = $_.String
-
+write-output "uninstall: [$($_.String)]"	#KH
+		
         Try {
             if ($uninstallcommand -match "^msiexec*") {
                 #Remove msiexec as we need to split for the uninstall
@@ -2224,11 +2225,13 @@ if ($mcafeeinstalled -eq "true") {
                 $uninstallcommand = $uninstallcommand + " /quiet /norestart"
                 $uninstallcommand = $uninstallcommand -replace "/I", "/X "
                 #Uninstall with string2 params
+write-output "uninstParm: $uninstallcommand"	#KH
                 Start-Process 'msiexec.exe' -ArgumentList $uninstallcommand -NoNewWindow -Wait
             }
             else {
                 #Exe installer, run straight path
                 $string2 = $uninstallcommand
+write-output "install2:$string2"	#KH				
                 start-process $string2
             }
             #$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode
@@ -2442,219 +2445,3 @@ write-output "Completed $(get-date)"
 ##KH
 
 Stop-Transcript
-							 
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-																  
-													  
-						   
