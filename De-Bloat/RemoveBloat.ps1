@@ -1517,6 +1517,18 @@ if ($manufacturer -like "*ASUS*") {
         Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
     }
 
+	##Remove Asus theme and background image
+	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes"
+
+	# Check and remove ThemeName if it exists
+	if (Get-ItemProperty -Path $registryPath -Name "ThemeName" -ErrorAction SilentlyContinue) {
+		Remove-ItemProperty -Path $registryPath -Name "ThemeName"
+	}
+
+	# Check and remove DesktopBackground if it exists
+	if (Get-ItemProperty -Path $registryPath -Name "DesktopBackground" -ErrorAction SilentlyContinue) {
+		Remove-ItemProperty -Path $registryPath -Name "DesktopBackground"
+	}
 
 } #end ASUS specific
 
