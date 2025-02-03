@@ -1517,6 +1517,7 @@ if ($manufacturer -like "*ASUS*") {
         Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
     }
 
+	write-output "Removing Asus Theme and background"
 	##Remove Asus theme and background image
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes"
 
