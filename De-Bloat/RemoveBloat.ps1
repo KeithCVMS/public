@@ -1156,6 +1156,7 @@ if ($version -like "*Windows 10*") {
 
     Write-Output "</LayoutModificationTemplate>" >> C:\Windows\StartLayout.xml
 }
+<# Start
 if ($version -like "*Windows 11*") {
     write-output "Windows 11 Detected"
     write-output "Removing Current Layout"
@@ -1203,6 +1204,7 @@ if ($version -like "*Windows 11*") {
     }
 }
 
+#>  KH end
 
 ############################################################################################################
 #                                              Remove Xbox Gaming                                          #
