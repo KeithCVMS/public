@@ -168,7 +168,16 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     Start-Process powershell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File `"{0}`" -WhitelistApps {1}" -f $PSCommandPath, ($WhitelistApps -join ',')) -Verb RunAs
     Exit
 }
+#Log function added KH
+Function Log() {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory=$false)] [String] $message
+	)
 
+	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	Write-Output "$ts $message"
+}
 #no errors throughout
 $ErrorActionPreference = 'silentlycontinue'
 
@@ -2400,12 +2409,13 @@ Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicPar
 
 ##Run it
 Start-Process -FilePath "C:\ProgramData\Debloat\odt.exe" -ArgumentList "/configure C:\ProgramData\Debloat\o365.xml" -Wait
- #> Commented out KH
+ #> #Commented out KH
 
 #KH Remove ANY pre-installed versions of Office
 # This was changed to use the MS SaRa Enterprise tool as MsTeamsWork installs work unreliably if there is ANY remnant of an Office install
 # the SaRa tool was forked and patched for a code bug that prevented it runnning in OfficeScrubScenario
 #
+Log "Starting SARA office scrub"
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
 	write-host "removing all Office versions"
 	### Download SaRa Office Uninstall script ###
@@ -2439,6 +2449,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 	#Run the SaraRemoval script
 	invoke-expression -command $destination -ErrorAction Continue
+	Log "Completed SARA Office scrub"
 } else {
 	write-host "No ClickToRun Office versions found"
 }
