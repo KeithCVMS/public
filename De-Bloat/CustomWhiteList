@@ -1,0 +1,12 @@
+' -customwhitelist ' +
+	#Microsoft package apps
+	'"Microsoft.Getstarted,Microsoft.GetHelp,Microsoft.WindowsSoundRecorder' +
+	',Microsoft.WindowsCamera,Microsoft.SecHealthUI,Microsoft.Todos,MicrosoftCorporationII.QuickAssist,clipchamp.clipchamp' +
+	#HP package apps
+	',AD2F1837.HPSupportAssistant' +
+	#ASUS package apps
+	',B9ECED6F.ASUSExpertWidget,B9ECED6F.ASUSPCAssistant' +
+	',AppUp.IntelGraphicsExperience,AppUp.IntelManagementandSecurityStatus' +
+	',DolbyLaboratories.DolbyAccess,DolbyLaboratories.DolbyDigitalPlusDecoderOEM' +
+	',DrivewintechTechnologyCo.DiracAudoManager,IntelligoTechnologyInc.541271065CCE8' +
+	'"'
