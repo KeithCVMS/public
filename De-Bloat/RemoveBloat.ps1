@@ -1542,6 +1542,12 @@ if ($manufacturer -like "*ASUS*") {
 		Remove-ItemProperty -Path $registryPath -Name "DesktopBackground"
 	}
 
+	#Clear Registry keys to delete the pre-loaded MSEdge favorites
+	$Keys = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems" | select-object pspath
+	ForEach ($Key in $Keys) {
+		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
+	}
+
 } #end ASUS specific
 
 if ($manufacturer -like "*HP*") {
