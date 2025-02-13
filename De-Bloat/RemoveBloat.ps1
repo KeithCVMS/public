@@ -17,7 +17,7 @@
 .OUTPUTS
 C:\ProgramData\Debloat\Debloat.log
 .NOTES
-  Version:        5.1.4
+  Version:        5.1.6
   Author:         Andrew Taylor
   Twitter:        @AndrewTaylor_2
   WWW:            andrewstaylor.com
@@ -129,6 +129,8 @@ C:\ProgramData\Debloat\Debloat.log
   Change 21/01/2025 - Edge Surf game fix
   Change 27/01/2025 - Added Logitech Download assistant
   Change 27/01/2025 - Converted from CRLF to LF
+  Change 06/02/2025 - Added the t back to transcrip(t)
+  Change 10/02/2025 - Fixed logic for Logitech Registry key
 Change KH fork	- Specific tenant mods
 						- logic to use a tag file for sensing previous installs and preventing multiple executions during pre-provisioning
 					-General mods
@@ -289,7 +291,7 @@ $WhitelistedApps = @(
 ##If $customwhitelist is set, split on the comma and add to whitelist
 if ($customwhitelist) {
     write-host "CustomWhiteList: $customwhitelist"	##KH
-	$customWhitelistApps = $customwhitelist -split ","
+    $customWhitelistApps = $customwhitelist -split ","
     foreach ($whitelistapp in $customwhitelistapps) {
         ##Add to the array
         $WhitelistedApps += $whitelistapp
@@ -480,7 +482,7 @@ $Bloatware = @(
 #"Microsoft.PowerAutomateDesktop"
 )
 
-$ErrorActionPreference = 'Continue'
+								   
 
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -488,8 +490,7 @@ foreach ($appxprov in $provisioned) {
     $displayname = $appxprov.DisplayName
     write-output "Removing $displayname AppX Provisioning Package"
     try {
-#        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue
-        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction Continue
+        Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue
         write-output "Removed $displayname AppX Provisioning Package"
     }
     catch {
@@ -506,8 +507,7 @@ foreach ($appxapp in $appxinstalled) {
     write-output "$displayname AppX Package exists"
     write-output "Removing $displayname AppX Package"
     try {
- #       Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
-        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction Continue
+        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
         write-output "Removed $displayname AppX Package"
     }
     catch {
@@ -516,7 +516,6 @@ foreach ($appxapp in $appxinstalled) {
 
 }
 
-$ErrorActionPreference = 'SilentlyContinue'
 
 
 ############################################################################################################
@@ -1165,7 +1164,6 @@ if ($version -like "*Windows 10*") {
 
     Write-Output "</LayoutModificationTemplate>" >> C:\Windows\StartLayout.xml
 }
-<# Start
 if ($version -like "*Windows 11*") {
     write-output "Windows 11 Detected"
     write-output "Removing Current Layout"
@@ -1176,6 +1174,7 @@ if ($version -like "*Windows 11*") {
 
     }
 
+<# Start KH comment this out as we replace start layout during AutopilotApps based on domain
     $blankjson = @'
 {
     "pinnedList": [
@@ -1211,9 +1210,9 @@ if ($version -like "*Windows 11*") {
         $starturl = "https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/start2.bin"
         invoke-webrequest -uri $starturl -outfile "C:\Users\Default\AppData\Local\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState\Start2.bin"
     }
+#>  #KH END
 }
 
-#>  KH end
 
 ############################################################################################################
 #                                              Remove Xbox Gaming                                          #
@@ -1273,10 +1272,10 @@ New-ItemProperty -Path $surf -Name 'AllowSurfGame' -Value 0 -PropertyType DWord
 #                                                                                                          #
 ############################################################################################################
 $logi = "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
-If (!(Test-Path $logi)) {
-    ##Delete the key
-    Remove-ItemProperty -Path "HKLM:\$logi" -Name "Logitech Download Assistant"
-    Write-Output "Logitech Download Assistant Registry key removed."
+If ((Get-ItemProperty $logi).PSObject.Properties.Name -contains 'Logitech Download Assistant') {
+    # Delete the key
+    Remove-ItemProperty -Path $logi -Name 'Logitech Download Assistant'
+    Write-Output 'Logitech Download Assistant Registry key removed.'
 
 }
 
@@ -1584,6 +1583,9 @@ if ($manufacturer -like "*HP*") {
         "HP Wolf Security - Console"
         "HP Wolf Security Application Support for Chrome 122.0.6261.139"
         "Windows Driver Package - HP Inc. sselam_4_4_2_453 AntiVirus  (11/01/2022 4.4.2.453)"
+        "HP Insights"
+        "HP Insights Analytics"
+        "HP Insights Analytics - Dependencies"
     )
 
 
@@ -1656,8 +1658,7 @@ if (test-path -Path 'C:\Program Files\HP\Z By HP Data Science Stack Manager\Unin
     if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Certified.lnk" -PathType Leaf) { Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\TCO Certified.lnk" -Force }
     if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -PathType Leaf) { Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Booking.com.lnk" -Force }
     if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -PathType Leaf) { Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Adobe offers.lnk" -Force }
-
-
+    if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Miro Offer.lnk" -PathType Leaf) { Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Miro offer.lnk" -Force }
     ##Remove Wolf Security
     wmic product where "name='HP Wolf Security'" call uninstall
     wmic product where "name='HP Wolf Security - Console'" call uninstall
@@ -2245,8 +2246,6 @@ if ($mcafeeinstalled -eq "true") {
     write-output "McAfee Removal Tool has been run"
 
     $InstalledPrograms = $allstring | Where-Object { ($_.Name -like "*McAfee*") }
-write-output "AllString: $allstring"	#KH
-write-output "InstalledProg: $installedprograms"	#KH
     $InstalledPrograms | ForEach-Object {
 
         write-output "Attempting to uninstall: [$($_.Name)]..."
@@ -2295,10 +2294,6 @@ write-output "install2:$string2"	#KH
         Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
     }
 write-output "Mcafee Removal all complete"
-#Interesting emough, this producese an error, but still deletes the package anyway
-#    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
-#    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
-#    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 }
 
 
