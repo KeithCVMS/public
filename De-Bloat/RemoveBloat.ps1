@@ -1547,6 +1547,11 @@ if ($manufacturer -like "*ASUS*") {
 	ForEach ($Key in $Keys) {
 		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 	}
+	
+	#Clear the pre-defined ASUS task bar definition as it will override default user settings
+    if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
+		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
+	}
 
 } #end ASUS specific
 
