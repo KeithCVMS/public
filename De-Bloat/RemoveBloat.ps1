@@ -1547,9 +1547,12 @@ if ($manufacturer -like "*ASUS*") {
 		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 	}
 	
-	#Clear the pre-defined ASUS task bar definition as it will override default user settings
+	#Clear the pre-defined ASUS task bar definition file and registry key as it will override default user settings
     if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
 		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
+	}
+	if ((Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction Stop).Property -eq "LayoutXMLPath") {
+		cmd /c reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "LayoutXMLPath" /f
 	}
 
 } #end ASUS specific
