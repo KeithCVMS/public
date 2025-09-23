@@ -204,7 +204,8 @@ Function Log() {
 		[Parameter(Mandatory=$false)] [String] $message
 	)
 
-	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+#	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	$ts = [datetime]::UtcNow
 	Write-Output "$ts $message"
 }
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
@@ -227,6 +228,8 @@ Else {
     New-Item -Path "$DebloatFolder" -ItemType Directory
     Write-Output "The folder $DebloatFolder was successfully created."
 }
+
+Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
 
 #KH S This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
@@ -258,10 +261,8 @@ Else {
 }
 ##KH E
 
-Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
-
 #KH S write out msg for pre-provisioning run"
-write-host "****************************VERSION 5_1_2KH***********************"
+Log "****************************VERSION 5_1_28KH***********************"
 
 if ($CurrProf -like "*systemprofile*") {
 	write-host "AutoPilot PreProvisioning run"
