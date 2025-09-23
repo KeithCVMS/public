@@ -1589,14 +1589,14 @@ if ($manufacturer -like "*ASUS*") {
 	
     ##You can decide which, if any, you wish to keep by including in customwhitelist
 	$UninstallPrograms = @(
-#		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
-#		"B9ECED6F.ASUSPCAssistant"						#MyAsus App on Expertbook, Vivobook
-#		"AppUp.IntelGraphicsExperience"					#Intel Graphic mgmt utility	on Expertbook, Vivobook
-#		"AppUp.IntelManagementandSecurityStatus"		#Intel Security mgmt utility on Expertbook
-#		"DolbyLaboratories.DolbyAccess"					#Dolby sound utilities on Expertbook, vivobook
-#		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM"	#Dolby sound utilities on Expertbook, vivobook	
-#		"DrivewintechTechnologyCo.DiracAudoManager"		#sound mgmt utility in Vivobook
-#		"IntelligoTechnologyInc.541271065CCE8"			#suite of voice/microphone AI and Meeting utilities that Asus packages in Expertbook
+		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
+		"B9ECED6F.ASUSPCAssistant"						#MyAsus App on Expertbook, Vivobook
+		"AppUp.IntelGraphicsExperience"					#Intel Graphic mgmt utility	on Expertbook, Vivobook
+		"AppUp.IntelManagementandSecurityStatus"		#Intel Security mgmt utility on Expertbook
+		"DolbyLaboratories.DolbyAccess"					#Dolby sound utilities on Expertbook, vivobook
+		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM"	#Dolby sound utilities on Expertbook, vivobook	
+		"DrivewintechTechnologyCo.DiracAudoManager"		#sound mgmt utility in Vivobook
+		"IntelligoTechnologyInc.541271065CCE8"			#suite of voice/microphone AI and Meeting utilities that Asus packages in Expertbook
     )	
 
     $UninstallPrograms = $UninstallPrograms | Where-Object { $appstoignore -notcontains $_ }
