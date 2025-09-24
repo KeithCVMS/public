@@ -204,9 +204,9 @@ Function Log() {
 		[Parameter(Mandatory=$false)] [String] $message
 	)
 
-#	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
-	$ts = [datetime]::UtcNow
-	Write-Output "$ts $message"
+	$tsL = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	$tsU = [datetime]::UtcNow
+	Write-Output "L:$tsL $message U:$tsU"
 }
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
@@ -246,11 +246,11 @@ $CurrProf = $Env:Userprofile
 If (Test-Path $DebloatTag) {
 	if ($CurrProf -like "*systemprofile*") {
 		# This prevents the script from running mutiple times during pre-provisioning
-		# but still allows it run multiple times if being run in a user Context
+		# but still allows it run to multiple times if being run in a user Context
 		# multiple attempts are recorded in the tag file
-		write-host "Script has already been run. Exiting"
+		write-host "Script has already been run for provisioning. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - $CurrProf - $UsrNm - Exiting"
-		#Exit 0
+		Exit 0
 	}
 	Else {
 		Add-Content -Path "$DebloatTag" -Value "Start Script $(get-date) - $CurrProf - $UsrNm"
@@ -2601,8 +2601,8 @@ $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
 log "IsOOBEComplete:$IsOOBEComplete"
-##if ($IsOOBEComplete -eq 0) {
-if (0 -eq 0) {
+if ($IsOOBEComplete -eq 0) {
+##if (0 -eq 0) {
 
     write-output "Still in OOBE, continue"
     ##Apps to remove - NOTE: Chrome has an unusual uninstall so sort on it's own
