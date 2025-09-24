@@ -211,7 +211,8 @@ Function Log() {
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
-$ErrorActionPreference = 'silentlycontinue'
+##$ErrorActionPreference = 'silentlycontinue'
+$ErrorActionPreference = 'continue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
@@ -2654,7 +2655,7 @@ if ($IsOOBEComplete -eq 0) {
     ##Check if they are installed first
 ## KH START
 if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\OfficeClickToRun.exe') {
-	write-host "removing all Office versions"
+	Log "removing all Office versions"
 ## KH END
 
 		## Remove Retail Copies XML Start ##
@@ -2696,7 +2697,9 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 		##Run it
 		Start-Process -FilePath "C:\ProgramData\Debloat\setup.exe" -ArgumentList "/configure C:\ProgramData\Debloat\o365.xml" -WindowStyle Hidden -Wait
-
+		
+		Log "Completed Office removal"
+		
 <#  commented out KH
 #KH Remove ANY pre-installed versions of Office
 # This was changed to use the MS SaRa Enterprise tool as MsTeamsWork installs work unreliably if there is ANY remnant of an Office install
@@ -2738,11 +2741,12 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 	invoke-expression -command $destination -ErrorAction Continue
 	Log "Completed SARA Office scrub"
 #> #Commented out KH
+
 } else {
 	write-host "No ClickToRun Office versions found"
 }
 
-write-host " Anything else removal complete $(get-date)"	##KH
+Log " Anything else removal complete $(get-date)"	##KH
 
 }
 else {
