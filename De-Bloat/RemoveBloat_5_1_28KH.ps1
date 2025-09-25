@@ -1327,7 +1327,7 @@ if ($version -like "*Windows 11*") {
     $blankjson | Out-File "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml" -Encoding utf8 -Force
     $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
     try {
-		$intunecomplete = @(Get-ChildItem $intunepath).count -ErrorAction SilentlyContinue
+		$intunecomplete = @(Get-ChildItem $intunepath -ErrorAction SilentlyContinue).count 
 		write-output "$intunecomplete Win32Apps found"
 	}
 	catch {
