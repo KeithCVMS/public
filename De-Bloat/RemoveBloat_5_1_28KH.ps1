@@ -357,6 +357,7 @@ $WhitelistedApps = @(
     'Microsoft.HEVCVideoExtension',
     'Microsoft.AV1VideoExtension'
 )
+Log "Combine Whitelists" 	##KH
 ##If $customwhitelist is set, split on the comma and add to whitelist
 if ($customwhitelist) {
     write-host "CustomWhiteList: $customwhitelist"	##KH
@@ -543,7 +544,7 @@ $Bloatware = @(
     #"MicrosoftWindows.Client.WebExperience"
 )
 
-
+Log "Removing Bloat AppX provisioned"
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
     $packagename = $appxprov.PackageName
@@ -559,6 +560,7 @@ foreach ($appxprov in $provisioned) {
 
 }
 
+Log "Removing Bloat AppX provisioned"
 
 $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
@@ -622,14 +624,20 @@ $Keys = @(
 )
 
 #This writes the output of each key it is removing and also removes the keys listed above.
+Log "Removing registry Keys"
+
 ForEach ($Key in $Keys) {
-    write-output "Removing $Key from registry"
-    Remove-Item $Key -Recurse
+    try {
+        Remove-Item $Key -Recurse -ErrorAction SilentlyContinue
+		write-output "Removed $Key from registry"
+    }
+    catch {
+		write-output "Key not found - $Key"
+    }
 }
 
-
 #Disables Windows Feedback Experience
-write-output "Disabling Windows Feedback Experience program"
+Log "Disabling Windows Feedback Experience program"
 $Advertising = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo"
 If (!(Test-Path $Advertising)) {
     New-Item $Advertising
@@ -639,7 +647,7 @@ If (Test-Path $Advertising) {
 }
 
 #Stops Cortana from being used as part of your Windows Search Function
-write-output "Stopping Cortana from being used as part of your Windows Search Function"
+Log "Stopping Cortana from being used as part of your Windows Search Function"
 $Search = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
 If (!(Test-Path $Search)) {
     New-Item $Search
@@ -649,7 +657,7 @@ If (Test-Path $Search) {
 }
 
 #Disables Web Search in Start Menu
-write-output "Disabling Bing Search in Start Menu"
+Log "Disabling Bing Search in Start Menu"
 $WebSearch = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
 If (!(Test-Path $WebSearch)) {
     New-Item $WebSearch
@@ -667,25 +675,36 @@ foreach ($sid in $UserSIDs) {
 Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0
 
 
-#Stops the Windows Feedback Experience from sending anonymous data
-write-output "Stopping the Windows Feedback Experience program"
+Log "Stopping the Windows Feedback Experience program"
 $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
+$ParentPeriod = "HKCU:\Software\Microsoft\Siuf"
 If (!(Test-Path $Period)) {
-    New-Item $Period
+	If (!(Test-Path $ParentPeriod)) {
+		New-Item $ParentPeriod
+		New-Item $Period
+	}
+	else {
+		New-Item $Period
+	}
 }
 Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
 
 ##Loop and do the same
 foreach ($sid in $UserSIDs) {
     $Period = "Registry::HKU\$sid\Software\Microsoft\Siuf\Rules"
-    If (!(Test-Path $Period)) {
-        New-Item $Period
-    }
+    $ParentPeriod = "Registry::HKU\$sid\Software\Microsoft\Siuf"
+	If (!(Test-Path $ParentPeriod)) {
+		New-Item $ParentPeriod
+		New-Item $Period
+	}
+	else {
+		New-Item $Period
+	}
     Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
 }
 
 ##Disables games from showing in Search bar
-write-output "Adding Registry key to stop games from search bar"
+Log "Adding Registry key to stop games from search bar"
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
 If (!(Test-Path $registryPath)) {
     New-Item $registryPath
@@ -693,7 +712,7 @@ If (!(Test-Path $registryPath)) {
 Set-ItemProperty $registryPath EnableDynamicContentInWSB -Value 0
 
 #Prevents bloatware applications from returning and removes Start Menu suggestions
-write-output "Adding Registry key to prevent bloatware apps from returning"
+Log "Adding Registry key to prevent bloatware apps from returning"
 $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
 $registryOEM = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
 If (!(Test-Path $registryPath)) {
@@ -726,7 +745,7 @@ foreach ($sid in $UserSIDs) {
 }
 
 #Preping mixed Reality Portal for removal
-write-output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
+Log "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
 $Holo = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Holographic"
 If (Test-Path $Holo) {
     Set-ItemProperty $Holo  FirstRunSucceeded -Value 0
@@ -741,7 +760,7 @@ foreach ($sid in $UserSIDs) {
 }
 
 #Disables Wi-fi Sense
-write-output "Disabling Wi-Fi Sense"
+Log "Disabling Wi-Fi Sense"
 $WifiSense1 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowWiFiHotSpotReporting"
 $WifiSense2 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"
 $WifiSense3 = "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"
@@ -757,8 +776,23 @@ Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0
 
 #Disables live tiles
 write-output "Disabling live tiles"
+write-output "checking paths:"
+$Live = "HKCU:\SOFTWARE\Policies"
+Test-Path $Live
+$Live = "HKCU:\SOFTWARE\Policies\Microsoft"
+Test-Path $Live
+$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows"
+Test-Path $Live
+$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion"
+Test-Path $Live
 $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
+Test-Path $Live
+
+
+$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
+$Live
 If (!(Test-Path $Live)) {
+	write-outpu "Create Key"
     New-Item $Live
 }
 Set-ItemProperty $Live  NoTileApplicationNotification -Value 1
@@ -938,7 +972,7 @@ foreach ($sid in $UserSIDs) {
 
 #Disabling consumer experience
 write-output "Disabling consumer experience"
-$consumer = 'HKLM:\\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
+$consumer = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
 If (Test-Path $consumer) {
     Set-ItemProperty $consumer -Name "DisableWindowsConsumerFeatures" -Value 1
 }
@@ -1211,7 +1245,7 @@ if ($version -like "*Windows 11*") {
 
 #Turn off Recall
 write-output "Disabling Recall"
-$recall = "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\WindowsAI"
+$recall = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI"
 If (!(Test-Path $recall)) {
     New-Item $recall
 }
@@ -1292,10 +1326,17 @@ if ($version -like "*Windows 11*") {
 
     $blankjson | Out-File "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml" -Encoding utf8 -Force
     $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
-    $intunecomplete = @(Get-ChildItem $intunepath).count
-    $userpath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
+    try {
+		$intunecomplete = @(Get-ChildItem $intunepath).count -ErrorAction SilentlyContinue
+		write-output "$intunecomplete Win32Apps found"
+	}
+	catch {
+		write-output "No Win32Apps found"
+		$intunecomplete = 0
+    }
+	$userpath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
     $userprofiles = Get-ChildItem $userpath | ForEach-Object { Get-ItemProperty $_.PSPath }
-Log "Inruncomplete1:$intunecomplete"
+Log "IntuneComplete1:$intunecomplete"
     $nonAdminLoggedOn = $false
     foreach ($user in $userprofiles) {
 
@@ -2542,10 +2583,10 @@ write-output "install2:$string2"	#KH
     #Interesting emough, this producese an error, but still deletes the package anyway
     get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
     get-appxpackage -allusers | sort-object name | format-table name, packagefullname
+	Get-AppxPackage -allusers | Where-Object Name -eq "McAfeeWPSSparsePackage" | Remove-AppxPackage -Online -AllUsers
     Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 write-output "Mcafee Removal all complete"		##KH
 }
-
 
 ##Look for anything else
 
@@ -2559,7 +2600,7 @@ if (Test-Path $intunepath) {
 } else {
 	$intunecomplete = 0
 }
-Log "Inruncomplete2:$intunecomplete"
+Log "Intunecomplete2:$intunecomplete"
 
 ##KHADD E
 $userpath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
@@ -2567,7 +2608,6 @@ $userprofiles = Get-ChildItem $userpath | Get-ItemProperty
 
 $nonAdminLoggedOn = $false
 foreach ($user in $userprofiles) {
-Log "User2:$user"
     # Exclude default, system, and network service profiles, and the Administrator profile
 ##KHADD S first condition changed to use profileimageath as the default user is not always default e.g. default0 on some systems
 ##   if ($user.PSChildName -notin '.DEFAULT', 'S-1-5-18', 'S-1-5-19', 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
@@ -2577,7 +2617,7 @@ Log "User2:$user"
         break
     }
 }
-Log "Nonadmin2:$nonadminloggedon"
+Log "NonAdmin2:$nonadminloggedon"
 
 $TypeDef = @"
 
