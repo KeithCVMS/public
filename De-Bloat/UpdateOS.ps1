@@ -221,7 +221,7 @@ Process {
         Exit 0
     }
     else {
-        Log "kipping reboot based on Reboot parameter (None)"
+        Log "Kkipping reboot based on Reboot parameter (None)"
         Stop-Transcript
         Exit 0
     }
