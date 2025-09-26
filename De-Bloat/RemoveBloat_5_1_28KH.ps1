@@ -208,6 +208,7 @@ Function Log() {
 	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
 	Write-Output "$ts $tz -  $message"
 }
+
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
@@ -231,6 +232,7 @@ Else {
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
+Log "**************VERSION 5_1_28KH***********************"
 
 #KH S This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
@@ -249,7 +251,7 @@ If (Test-Path $DebloatTag) {
 		# This prevents the script from running mutiple times during pre-provisioning
 		# but still allows it run to multiple times if being run in a user Context
 		# multiple attempts are recorded in the tag file
-		write-host "Script has already been run for provisioning. Exiting"
+		Log "Script has already been run for provisioning. Exiting"
 		Add-Content -Path "$DebloatTag" -Value "Script has already been run- $(get-date) - $CurrProf - $UsrNm - Exiting"
 		Exit 0
 	}
@@ -263,10 +265,9 @@ Else {
 ##KH E
 
 #KH S write out msg for pre-provisioning run"
-Log "****************************VERSION 5_1_28KH***********************"
 
 if ($CurrProf -like "*systemprofile*") {
-	write-host "AutoPilot PreProvisioning run"
+	Log "AutoPilot PreProvisioning run"
 }
 #KH Define PS-Drives for non-default registry paths if not present on system
 if (!(Test-Path HKCR:)) {
@@ -359,8 +360,7 @@ $WhitelistedApps = @(
 )
 Log "Combine Whitelists" 	##KH
 ##If $customwhitelist is set, split on the comma and add to whitelist
-if ($customwhitelist) {
-    write-host "CustomWhiteList: $customwhitelist"	##KH
+if (Log "CustomWhiteList: $customwhitelist"	##KH
     $customWhitelistApps = $customwhitelist -split ","
     foreach ($whitelistapp in $customwhitelistapps) {
         ##Add to the array
@@ -2822,7 +2822,7 @@ else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
 
-Log "Completed""	##KH
+Log "Completed"	##KH
 Log "Total Script $($runTimeFormatted)"
 
 #Set ProgressPreerence back
