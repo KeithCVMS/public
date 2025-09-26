@@ -360,7 +360,8 @@ $WhitelistedApps = @(
 )
 Log "Combine Whitelists" 	##KH
 ##If $customwhitelist is set, split on the comma and add to whitelist
-if (Log "CustomWhiteList: $customwhitelist"	##KH
+Log "CustomWhiteList: $customwhitelist"
+if ($customwhitelist) {
     $customWhitelistApps = $customwhitelist -split ","
     foreach ($whitelistapp in $customwhitelistapps) {
         ##Add to the array
@@ -784,7 +785,6 @@ Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0
 
 #Disables live tiles
 Log "Disabling live tiles"
-write-output "checking paths:"
 $Live = "HKCU:\SOFTWARE\Policies"
 Test-Path $Live
 $Live = "HKCU:\SOFTWARE\Policies\Microsoft"
@@ -796,29 +796,32 @@ Test-Path $Live
 $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
 Test-Path $Live
 
-
-$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
+$Live = "[Microsoft.Win32.Registry]::SetValue('" + 
+		"HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'" +
+		", 'NoTileApplicationNotification', 1)"
 $Live
+invoke-expression $Live
 
-[microsoft.win32.registry]::SetValue($Live, "NoTileApplicationNotification", 1)
-<# If (!(Test-Path $Live)) {
-	write-output "Create Key"
-    New-Item $Live
-}
-Set-ItemProperty $Live  NoTileApplicationNotification -Value 1
- #>
- 
  
 ##Loop through users and do the same
 foreach ($sid in $UserSIDs) {
-    $Live = "Registry::HKU\$sid\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
-    [microsoft.win32.registry]::SetValue($Live, "NoTileApplicationNotification", 1)
+	write-output "SID: $sid"
+	$Live = "HKCU:\SOFTWARE\Policies"
+	Test-Path $Live
+	$Live = "HKCU:\SOFTWARE\Policies\Microsoft"
+	Test-Path $Live
+	$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows"
+	Test-Path $Live
+	$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion"
+	Test-Path $Live
+	$Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
+	Test-Path $Live
 
-<# If (!(Test-Path $Live)) {
-        New-Item $Live
-    }
-    Set-ItemProperty $Live  NoTileApplicationNotification -Value 1
- #>
+	$Live = "[Microsoft.Win32.Registry]::SetValue('" + 
+			"HKEY_USERS\$sid\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'" +
+			", 'NoTileApplicationNotification', 1)"
+	$Live
+	invoke-expression $Live
 }
 
 #Turns off Data Collection via the AllowTelemtry key by changing it to 0
