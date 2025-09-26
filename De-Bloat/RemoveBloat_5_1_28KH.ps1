@@ -204,9 +204,9 @@ Function Log() {
 		[Parameter(Mandatory=$false)] [String] $message
 	)
 
-	$tsL = get-date -f "yyyy/MM/dd hh:mm:ss tt"
-	$tsU = [datetime]::UtcNow
-	Write-Output "L:$tsL $message U:$tsU"
+	$tz = [Regex]::Replace([System.TimeZoneInfo]::Local.StandardName, '([A-Z])\w+\s*', '$1')
+	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	Write-Output "$ts $tz -  $message"
 }
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
@@ -221,13 +221,13 @@ $ProgressPreference = 'SilentlyContinue'
 #Create Folder
 $DebloatFolder = "C:\ProgramData\Debloat"
 If (Test-Path $DebloatFolder) {
-    Write-Output "$DebloatFolder exists. Skipping."
+    Log "$DebloatFolder exists. Skipping."
 }
 Else {
-    Write-Output "The folder '$DebloatFolder' doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
+    Log "The folder '$DebloatFolder' doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
     Start-Sleep 1
     New-Item -Path "$DebloatFolder" -ItemType Directory
-    Write-Output "The folder $DebloatFolder was successfully created."
+    Log "The folder $DebloatFolder was successfully created."
 }
 
 Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
@@ -282,10 +282,10 @@ function Remove-CustomScheduledTasks {
         [string[]]$TaskNames
     )
 
-    Write-Output "Removing specified scheduled tasks..."
+    Log "Removing specified scheduled tasks..."
 
     foreach ($taskName in $TaskNames) {
-        Write-Output "Attempting to remove task: $taskName"
+        Log "Attempting to remove task: $taskName"
 
         # Check if the task exists
         $task = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
@@ -297,14 +297,14 @@ function Remove-CustomScheduledTasks {
 
                 # Then unregister (remove) the task
                 Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction Stop
-                Write-Output "Successfully removed scheduled task: $taskName"
+                Log "Successfully removed scheduled task: $taskName"
             }
             catch {
-                Write-Output "Failed to remove scheduled task: $taskName. Error: $_"
+                Log "Failed to remove scheduled task: $taskName. Error: $_"
             }
         }
         else {
-            Write-Output "Scheduled task not found: $taskName"
+            Log "Scheduled task not found: $taskName"
         }
     }
 }
@@ -549,13 +549,13 @@ $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayNam
 foreach ($appxprov in $provisioned) {
     $packagename = $appxprov.PackageName
     $displayname = $appxprov.DisplayName
-    write-output "Removing $displayname AppX Provisioning Package"
+    Log "Removing $displayname AppX Provisioning Package"
     try {
         Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue
-        write-output "Removed $displayname AppX Provisioning Package"
+        Log "Removed $displayname AppX Provisioning Package"
     }
     catch {
-        write-output "Unable to remove $displayname AppX Provisioning Package"
+        Log "Unable to remove $displayname AppX Provisioning Package"
     }
 
 }
@@ -566,14 +566,14 @@ $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatwa
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
     $displayname = $appxapp.Name
-    write-output "$displayname AppX Package exists"
-    write-output "Removing $displayname AppX Package"
+    Log "$displayname AppX Package exists"
+    Log "Removing $displayname AppX Package"
     try {
         Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
-        write-output "Removed $displayname AppX Package"
+        Log "Removed $displayname AppX Package"
     }
     catch {
-        write-output "$displayname AppX Package does not exist"
+        Log "$displayname AppX Package does not exist"
     }
 
 }
@@ -629,10 +629,10 @@ Log "Removing registry Keys"
 ForEach ($Key in $Keys) {
     try {
         Remove-Item $Key -Recurse -ErrorAction SilentlyContinue
-		write-output "Removed $Key from registry"
+		Log "Removed $Key from registry"
     }
     catch {
-		write-output "Key not found - $Key"
+		Log "Key not found - $Key"
     }
 }
 
@@ -693,13 +693,21 @@ Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
 foreach ($sid in $UserSIDs) {
     $Period = "Registry::HKU\$sid\Software\Microsoft\Siuf\Rules"
     $ParentPeriod = "Registry::HKU\$sid\Software\Microsoft\Siuf"
-	If (!(Test-Path $ParentPeriod)) {
-		New-Item $ParentPeriod
-		New-Item $Period
+	Log "Rules: $(Test-Path $Period)"
+	Log "Siuf: $(Test-Path $Period)"
+	If (!(Test-Path $Period)) {
+		write-output "no rule"
+		If (!(Test-Path $ParentPeriod)) {
+			write-output "NoSiuf"
+			New-Item $ParentPeriod
+			#New-Item $Period
+		}
+		else {
+			write-output "no rule, but parent"
+			New-Item $Period
+		}
 	}
-	else {
-		New-Item $Period
-	}
+	
     Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
 }
 
@@ -775,7 +783,7 @@ Set-ItemProperty $WifiSense2  Value -Value 0
 Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0
 
 #Disables live tiles
-write-output "Disabling live tiles"
+Log "Disabling live tiles"
 write-output "checking paths:"
 $Live = "HKCU:\SOFTWARE\Policies"
 Test-Path $Live
@@ -791,24 +799,31 @@ Test-Path $Live
 
 $Live = "HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
 $Live
-If (!(Test-Path $Live)) {
-	write-outpu "Create Key"
+
+[microsoft.win32.registry]::SetValue($Live, "NoTileApplicationNotification", 1)
+<# If (!(Test-Path $Live)) {
+	write-output "Create Key"
     New-Item $Live
 }
 Set-ItemProperty $Live  NoTileApplicationNotification -Value 1
-
+ #>
+ 
+ 
 ##Loop through users and do the same
 foreach ($sid in $UserSIDs) {
     $Live = "Registry::HKU\$sid\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications"
-    If (!(Test-Path $Live)) {
+    [microsoft.win32.registry]::SetValue($Live, "NoTileApplicationNotification", 1)
+
+<# If (!(Test-Path $Live)) {
         New-Item $Live
     }
     Set-ItemProperty $Live  NoTileApplicationNotification -Value 1
+ #>
 }
 
 #Turns off Data Collection via the AllowTelemtry key by changing it to 0
 # This is needed for Intune reporting to work, uncomment if using via other method
-#write-output "Turning off Data Collection"
+#Log "Turning off Data Collection"
 #$DataCollection1 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
 #$DataCollection2 = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection"
 #$DataCollection3 = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection"
@@ -826,7 +841,7 @@ foreach ($sid in $UserSIDs) {
 ###Enable location tracking for "find my device", uncomment if you don't need it
 
 #Disabling Location Tracking
-#write-output "Disabling Location Tracking"
+#Log "Disabling Location Tracking"
 #$SensorState = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Sensor\Overrides\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}"
 #$LocationConfig = "HKLM:\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration"
 #If (!(Test-Path $SensorState)) {
@@ -839,7 +854,7 @@ foreach ($sid in $UserSIDs) {
 #Set-ItemProperty $LocationConfig Status -Value 0
 
 #Disables People icon on Taskbar
-write-output "Disabling People icon on Taskbar"
+Log "Disabling People icon on Taskbar"
 $People = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People'
 If (Test-Path $People) {
     Set-ItemProperty $People -Name PeopleBand -Value 0
@@ -853,7 +868,7 @@ foreach ($sid in $UserSIDs) {
     }
 }
 
-write-output "Disabling Cortana"
+Log "Disabling Cortana"
 $Cortana1 = "HKCU:\SOFTWARE\Microsoft\Personalization\Settings"
 $Cortana2 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization"
 $Cortana3 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
@@ -893,7 +908,7 @@ foreach ($sid in $UserSIDs) {
 
 
 #Removes 3D Objects from the 'My Computer' submenu in explorer
-write-output "Removing 3D Objects from explorer 'My Computer' submenu"
+Log "Removing 3D Objects from explorer 'My Computer' submenu"
 $Objects32 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
 $Objects64 = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\MyComputer\NameSpace\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
 If (Test-Path $Objects32) {
@@ -950,7 +965,7 @@ New-ItemProperty -Path $registryPath2 -Name $name6 -Value 0 -PropertyType DWord 
 ############################################################################################################
 
 #Turn off Learn about this picture
-write-output "Disabling Learn about this picture"
+Log "Disabling Learn about this picture"
 $picture = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel'
 If (Test-Path $picture) {
     Set-ItemProperty $picture -Name "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}" -Value 1
@@ -971,7 +986,7 @@ foreach ($sid in $UserSIDs) {
 ############################################################################################################
 
 #Disabling consumer experience
-write-output "Disabling consumer experience"
+Log "Disabling consumer experience"
 $consumer = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent'
 If (Test-Path $consumer) {
     Set-ItemProperty $consumer -Name "DisableWindowsConsumerFeatures" -Value 1
@@ -987,7 +1002,7 @@ If (Test-Path $consumer) {
 #                                                                                                          #
 ############################################################################################################
 
-write-output "Disabling Windows Spotlight on lockscreen"
+Log "Disabling Windows Spotlight on lockscreen"
 $spotlight = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
 If (Test-Path $spotlight) {
     Set-ItemProperty $spotlight -Name "RotatingLockScreenOverlayEnabled" -Value 0
@@ -1003,7 +1018,7 @@ foreach ($sid in $UserSIDs) {
     }
 }
 
-write-output "Disabling Windows Spotlight on background"
+Log "Disabling Windows Spotlight on background"
 $spotlight = 'HKCU:\Software\Policies\Microsoft\Windows\CloudContent'
 If (Test-Path $spotlight) {
     Set-ItemProperty $spotlight -Name "DisableSpotlightCollectionOnDesktop" -Value 1
@@ -1024,7 +1039,7 @@ foreach ($sid in $UserSIDs) {
 #                                                                                                          #
 ############################################################################################################
 
-write-output "Adding GameDVR Fix"
+Log "Adding GameDVR Fix"
 $gamedvr = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR'
 If (Test-Path $gamedvr) {
     Set-ItemProperty $gamedvr -Name "AppCaptureEnabled" -Value 0
@@ -1059,7 +1074,7 @@ foreach ($sid in $UserSIDs) {
 ############################################################################################################
 
 #Disables scheduled tasks that are considered unnecessary
-write-output "Disabling scheduled tasks"
+Log "Disabling scheduled tasks"
 $task1 = Get-ScheduledTask -TaskName XblGameSaveTaskLogon -ErrorAction SilentlyContinue
 if ($null -ne $task1) {
     Get-ScheduledTask  XblGameSaveTaskLogon | Disable-ScheduledTask -ErrorAction SilentlyContinue
@@ -1090,7 +1105,7 @@ if ($null -ne $task6) {
 #                                             Disable Services                                             #
 #                                                                                                          #
 ############################################################################################################
-##write-output "Stopping and disabling Diagnostics Tracking Service"
+##Log "Stopping and disabling Diagnostics Tracking Service"
 #Disabling the Diagnostics Tracking Service
 ##Stop-Service "DiagTrack"
 ##Set-Service "DiagTrack" -StartupType Disabled
@@ -1103,7 +1118,7 @@ if ($null -ne $task6) {
 
 # Remove specified scheduled tasks if provided
 if ($TasksToRemove -and $TasksToRemove.Count -gt 0) {
-    Write-Output "Processing custom scheduled tasks removal..."
+    Log "Processing custom scheduled tasks removal..."
     Remove-CustomScheduledTasks -TaskNames $TasksToRemove
 }
 
@@ -1112,7 +1127,7 @@ if ($TasksToRemove -and $TasksToRemove.Count -gt 0) {
 #                                                                                                          #
 ############################################################################################################
 #Windows 11 Customisations
-write-output "Removing Windows 11 Customisations"
+Log "Removing Windows 11 Customisations"
 
 
 ##Disable Feeds
@@ -1121,7 +1136,7 @@ If (!(Test-Path $registryPath)) {
     New-Item $registryPath
 }
 Set-ItemProperty $registryPath "AllowNewsAndInterests" -Value 0
-write-output "Disabled Feeds"
+Log "Disabled Feeds"
 
 ############################################################################################################
 #                                           Windows Backup App                                             #
@@ -1129,7 +1144,7 @@ write-output "Disabled Feeds"
 ############################################################################################################
 $version = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
 if ($version -like "*Windows 10*") {
-    write-output "Removing Windows Backup"
+    Log "Removing Windows Backup"
     $filepath = "C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\WindowsBackup\Assets"
     if (Test-Path $filepath) {
 
@@ -1137,11 +1152,11 @@ if ($version -like "*Windows 10*") {
         Remove-WindowsPackage -Online -PackageName $packagename
 
         ##Add back snipping tool functionality
-        write-output "Adding Windows Shell Components"
+        Log "Adding Windows Shell Components"
         DISM /Online /Add-Capability /CapabilityName:Windows.Client.ShellComponents~~~~0.0.1.0
-        write-output "Components Added"
+        Log "Components Added"
     }
-    write-output "Removed"
+    Log "Removed"
 }
 
 ############################################################################################################
@@ -1150,7 +1165,7 @@ if ($version -like "*Windows 10*") {
 ############################################################################################################
 $version = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
 if ($version -like "*Windows 11*") {
-    write-output "Removing Windows Copilot"
+    Log "Removing Windows Copilot"
     # Define the registry key and value
     $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot"
     $propertyName = "TurnOffWindowsCopilot"
@@ -1214,7 +1229,7 @@ if ($version -like "*Windows 11*") {
     reg unload HKU\temphive
 
 
-    write-output "Removed"
+    Log "Removed"
 
 
     foreach ($sid in $UserSIDs) {
@@ -1244,7 +1259,7 @@ if ($version -like "*Windows 11*") {
 ############################################################################################################
 
 #Turn off Recall
-write-output "Disabling Recall"
+Log "Disabling Recall"
 $recall = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI"
 If (!(Test-Path $recall)) {
     New-Item $recall
@@ -1272,20 +1287,20 @@ foreach ($sid in $UserSIDs) {
 #                                             Clear Start Menu                                             #
 #                                                                                                          #
 ############################################################################################################
-write-output "Clearing Start Menu"
+Log "Clearing Start Menu"
 #Delete layout file if it already exists
 
 ##Check windows version
 $version = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
 if ($version -like "*Windows 10*") {
-    write-output "Windows 10 Detected"
-    write-output "Removing Current Layout"
+    Log "Windows 10 Detected"
+    Log "Removing Current Layout"
     If (Test-Path C:\Windows\StartLayout.xml) {
 
         Remove-Item C:\Windows\StartLayout.xml
 
     }
-    write-output "Creating Default Layout"
+    Log "Creating Default Layout"
     #Creates the blank layout file
 
     Write-Output "<LayoutModificationTemplate xmlns:defaultlayout=""http://schemas.microsoft.com/Start/2014/FullDefaultLayout"" xmlns:start=""http://schemas.microsoft.com/Start/2014/StartLayout"" Version=""1"" xmlns=""http://schemas.microsoft.com/Start/2014/LayoutModification"">" >> C:\Windows\StartLayout.xml
@@ -1305,8 +1320,8 @@ if ($version -like "*Windows 10*") {
     Write-Output "</LayoutModificationTemplate>" >> C:\Windows\StartLayout.xml
 }
 if ($version -like "*Windows 11*") {
-    write-output "Windows 11 Detected"
-    write-output "Removing Current Layout"
+    Log "Windows 11 Detected"
+    Log "Removing Current Layout"
     If (Test-Path "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml") {
 
         Remove-Item "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml"
@@ -1327,11 +1342,11 @@ if ($version -like "*Windows 11*") {
     $blankjson | Out-File "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml" -Encoding utf8 -Force
     $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
     try {
-		$intunecomplete = @(Get-ChildItem $intunepath -ErrorAction SilentlyContinue).count 
-		write-output "$intunecomplete Win32Apps found"
+		$intunecomplete = @(Get-ChildItem $intunepath).count 
+		Log "$intunecomplete Win32Apps found"
 	}
 	catch {
-		write-output "No Win32Apps found"
+		Log "No Win32Apps found"
 		$intunecomplete = 0
     }
 	$userpath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
@@ -1340,12 +1355,12 @@ Log "IntuneComplete1:$intunecomplete"
     $nonAdminLoggedOn = $false
     foreach ($user in $userprofiles) {
 
-##KHADD S
-Log "User1:$user"
-#first condition changed to use profileimageath as the default use ins not alwasy default e.g. default0 on some systems
-#        if ($user.PSChildName -ne '.DEFAULT' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
-    if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -notin '.DEFAULT', 'S-1-5-18', 'S-1-5-19', 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
-##KHADD E
+		##KHADD S
+		Log "User1:$user.PSChildName"
+		#first condition changed to use profileimageath as the default use ins not alwasy default e.g. default0 on some systems
+		#        if ($user.PSChildName -ne '.DEFAULT' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
+		if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -notin '.DEFAULT', 'S-1-5-18', 'S-1-5-19', 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
+		##KHADD E
             $nonAdminLoggedOn = $true
             break
         }
@@ -1377,7 +1392,7 @@ if ($null -ne $task) {
 
 ##Check if GamePresenceWriter.exe exists
 if (Test-Path "$env:WinDir\System32\GameBarPresenceWriter.exe") {
-    write-output "GamePresenceWriter.exe exists"
+    Log "GamePresenceWriter.exe exists"
     #Take-Ownership -Path "$env:WinDir\System32\GameBarPresenceWriter.exe"
     $NewAcl = Get-Acl -Path "$env:WinDir\System32\GameBarPresenceWriter.exe"
     # Set properties
@@ -1395,7 +1410,7 @@ if (Test-Path "$env:WinDir\System32\GameBarPresenceWriter.exe") {
 
 }
 else {
-    write-output "GamePresenceWriter.exe does not exist"
+    Log "GamePresenceWriter.exe does not exist"
 }
 
 New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\GameDVR" -Name "AllowgameDVR" -PropertyType DWORD -Value 0 -Force
@@ -1421,16 +1436,16 @@ New-ItemProperty -Path $surf -Name 'AllowSurfGame' -Value 0 -PropertyType DWord
 #If ((Get-ItemProperty $logi).PSObject.Properties.Name -contains 'Logitech Download Assistant') {
 #    # Delete the key
 #    Remove-ItemProperty -Path $logi -Name 'Logitech Download Assistant'
-#    Write-Output 'Logitech Download Assistant Registry key removed.'
+#    Log 'Logitech Download Assistant Registry key removed.'
 #}
 
 ##Remove the dll
 #$logidll = "C:\Windows\System32\LogiLDA.dll"
 #if (Test-Path $logidll) {
 #    Remove-Item $logidll -Force
-#    Write-Output "Logitech Download Assistant DLL removed."
+#    Log "Logitech Download Assistant DLL removed."
 #} else {
-#    Write-Output "Logitech Download Assistant DLL not found."
+#    Log "Logitech Download Assistant DLL not found."
 #}
 
 ############################################################################################################
@@ -1439,7 +1454,7 @@ New-ItemProperty -Path $surf -Name 'AllowSurfGame' -Value 0 -PropertyType DWord
 ############################################################################################################
 
 
-write-output "Checking 32-bit System Registry"
+Log "Checking 32-bit System Registry"
 ##Search for 32-bit versions and list them
 $allstring = @()
 $path1 = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -1470,8 +1485,8 @@ foreach ($32app in $32apps) {
     }
 
 }
-write-output "32-bit check complete"
-write-output "Checking 64-bit System registry"
+Log "32-bit check complete"
+Log "Checking 64-bit System registry"
 ##Search for 64-bit versions and list them
 
 $path2 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -1503,10 +1518,10 @@ foreach ($64app in $64apps) {
 
 }
 
-write-output "64-bit checks complete"
+Log "64-bit checks complete"
 
 ##USER
-write-output "Checking 32-bit User Registry"
+Log "Checking 32-bit User Registry"
 ##Search for 32-bit versions and list them
 $path1 = "HKCU:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
 ##Check if path exists
@@ -1538,8 +1553,8 @@ if (Test-Path $path1) {
         }
     }
 }
-write-output "32-bit check complete"
-write-output "Checking 64-bit Use registry"
+Log "32-bit check complete"
+Log "Checking 64-bit Use registry"
 ##Search for 64-bit versions and list them
 
 $path2 = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -1604,9 +1619,9 @@ function UninstallAppFull {
             #Exe installer, run straight path
             $string2 = $uninstallString
         }
-        write-output "Uninstalling: $displayName"
+        Log "Uninstalling: $displayName"
         Start-Process $string2
-        write-output "Uninstalled: $displayName" -ForegroundColor Green
+        Log "Uninstalled: $displayName" -ForegroundColor Green
     }
 }
 
@@ -1616,13 +1631,13 @@ function UninstallAppFull {
 #                                                                                                          #
 ############################################################################################################
 ##Check Manufacturer
-write-output "Detecting Manufacturer"
+Log "Detecting Manufacturer"
 $details = Get-CimInstance -ClassName Win32_ComputerSystem
 $manufacturer = $details.Manufacturer
 
 if ($manufacturer -like "*ASUS*") {
 	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and vivobook(consumer) laptops in my lab currently
-    write-output "ASUS detected"
+    Log "ASUS detected"
     write-output ""
 	#Remove ASUS bloat
 	
@@ -1649,18 +1664,18 @@ if ($manufacturer -like "*ASUS*") {
 
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app -ErrorAction SilentlyContinue) {
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app | Remove-AppxProvisionedPackage -Online
-            write-output "Removed provisioned package for $app."
+            Log "Removed provisioned package for $app."
         }
         else {
-            write-output "Provisioned package for $app not found."
+            Log "Provisioned package for $app not found."
         }
 
         if (Get-AppxPackage -allusers -Name $app -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name $app | Remove-AppxPackage -AllUsers
-            write-output "Removed $app."
+            Log "Removed $app."
         }
         else {
-            write-output "$app not found."
+            Log "$app not found."
         }
 
         UninstallAppFull -appName $app
@@ -1672,7 +1687,7 @@ if ($manufacturer -like "*ASUS*") {
         Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
     }
 
-	write-output "Removing Asus Theme and background"
+	Log "Removing Asus Theme and background"
 	##Remove Asus theme and background image
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes"
 
@@ -1703,7 +1718,7 @@ if ($manufacturer -like "*ASUS*") {
 } #end ASUS specific
 
 if ($manufacturer -like "*HP*") {
-    write-output "HP detected"
+    Log "HP detected"
     #Remove HP bloat
 
 
@@ -1753,18 +1768,18 @@ if ($manufacturer -like "*HP*") {
 
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app -ErrorAction SilentlyContinue) {
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app | Remove-AppxProvisionedPackage -Online
-            write-output "Removed provisioned package for $app."
+            Log "Removed provisioned package for $app."
         }
         else {
-            write-output "Provisioned package for $app not found."
+            Log "Provisioned package for $app not found."
         }
 
         if (Get-AppxPackage -allusers -Name $app -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name $app | Remove-AppxPackage -AllUsers
-            write-output "Removed $app."
+            Log "Removed $app."
         }
         else {
-            write-output "$app not found."
+            Log "$app not found."
         }
 
         UninstallAppFull -appName $app
@@ -1873,7 +1888,7 @@ if ($manufacturer -like "*HP*") {
 foreach ($pattern in $packagePatterns) {
     $patternName = $pattern.Name
     $minVersion = $pattern.MinVersion
-    Write-Output "Checking for packages matching pattern: $patternName"
+    Log "Checking for packages matching pattern: $patternName"
     
     # Search for matching packages in the registry
     $matchingPackages = @()
@@ -1909,11 +1924,11 @@ foreach ($pattern in $packagePatterns) {
     }
     
     if ($matchingPackages.Count -eq 0) {
-        Write-Output "No packages found matching pattern: $patternName"
+        Log "No packages found matching pattern: $patternName"
         continue
     }
     
-    Write-Output "Found $($matchingPackages.Count) package(s) matching pattern: $patternName"
+    Log "Found $($matchingPackages.Count) package(s) matching pattern: $patternName"
     
     # Process each matching package
     foreach ($package in $matchingPackages) {
@@ -1922,16 +1937,16 @@ foreach ($pattern in $packagePatterns) {
         $quietUninstallString = $package.QuietUninstallString
         $version = $package.DisplayVersion
         
-        Write-Output "Attempting to uninstall: $displayName (Version: $version)"
+        Log "Attempting to uninstall: $displayName (Version: $version)"
         
         # Try to use the UninstallAppFull function first
-        Write-Output "Trying to uninstall via UninstallAppFull..."
+        Log "Trying to uninstall via UninstallAppFull..."
         UninstallAppFull -appName $displayName
         
         # If UninstallAppFull doesn't work, fall back to direct uninstallation
         # Check if uninstall string exists and attempt uninstall
         if ($quietUninstallString) {
-            Write-Output "Using quiet uninstall string: $quietUninstallString"
+            Log "Using quiet uninstall string: $quietUninstallString"
             try {
                 if ($quietUninstallString -match "msiexec") {
                     # For MSI-based uninstalls, add /quiet
@@ -1945,12 +1960,12 @@ foreach ($pattern in $packagePatterns) {
                     
                     Start-Process -FilePath $uninstallExe -ArgumentList $uninstallArgs -Wait -NoNewWindow
                 }
-                Write-Output "Quiet uninstall completed for: $displayName"
+                Log "Quiet uninstall completed for: $displayName"
             } catch {
-                Write-Output "Error during quiet uninstall: $_"
+                Log "Error during quiet uninstall: $_"
             }
         } elseif ($uninstallString) {
-            Write-Output "Using standard uninstall string: $uninstallString"
+            Log "Using standard uninstall string: $uninstallString"
             try {
                 if ($uninstallString -match "msiexec") {
                     # For MSI-based uninstalls, add /quiet
@@ -1973,23 +1988,23 @@ foreach ($pattern in $packagePatterns) {
                     
                     Start-Process -FilePath $uninstallExe -ArgumentList $uninstallArgs -Wait -NoNewWindow
                 }
-                Write-Output "Standard uninstall completed for: $displayName"
+                Log "Standard uninstall completed for: $displayName"
             } catch {
-                Write-Output "Error during standard uninstall: $_"
+                Log "Error during standard uninstall: $_"
             }
         } else {
-            Write-Output "No uninstall string found for: $displayName"
+            Log "No uninstall string found for: $displayName"
         }
     }
 }
 
-    write-output "Removed HP bloat"
+    Log "Removed HP bloat"
 }
 
 
 
 if ($manufacturer -like "*Dell*") {
-    write-output "Dell detected"
+    Log "Dell detected"
     #Remove Dell bloat
 
     ##Dell
@@ -2041,18 +2056,18 @@ if ($manufacturer -like "*Dell*") {
 
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app -ErrorAction SilentlyContinue) {
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app | Remove-AppxProvisionedPackage -Online
-            write-output "Removed provisioned package for $app."
+            Log "Removed provisioned package for $app."
         }
         else {
-            write-output "Provisioned package for $app not found."
+            Log "Provisioned package for $app not found."
         }
 
         if (Get-AppxPackage -allusers -Name $app -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name $app | Remove-AppxPackage -AllUsers
-            write-output "Removed $app."
+            Log "Removed $app."
         }
         else {
-            write-output "$app not found."
+            Log "$app not found."
         }
 
         UninstallAppFull -appName $app
@@ -2063,7 +2078,7 @@ if ($manufacturer -like "*Dell*") {
 
     ##Belt and braces, remove via CIM too
     #foreach ($program in $UninstallPrograms) {
-    #    write-output "Removing $program"
+    #    Log "Removing $program"
     #    Get-CimInstance -Query "SELECT * FROM Win32_Product WHERE name = '$program'" | Invoke-CimMethod -MethodName Uninstall
     #}
 
@@ -2151,7 +2166,7 @@ if ($manufacturer -like "*Dell*") {
 
 
 if ($manufacturer -like "Lenovo") {
-    write-output "Lenovo detected"
+    Log "Lenovo detected"
 
 
     ##Lenovo Specific
@@ -2173,7 +2188,7 @@ if ($manufacturer -like "Lenovo") {
         foreach ($app in $installedApps) {
             $uninstallString = $app.UninstallString
             $displayName = $app.DisplayName
-            write-output "Uninstalling: $displayName"
+            Log "Uninstalling: $displayName"
             Start-Process $uninstallString -ArgumentList "/VERYSILENT" -Wait
             write-output "Uninstalled: $displayName" -ForegroundColor Green
         }
@@ -2199,9 +2214,9 @@ if ($manufacturer -like "Lenovo") {
     )
 
     foreach ($process in $processnames) {
-        write-output "Stopping Process $process"
+        Log "Stopping Process $process"
         Get-Process -Name $process | Stop-Process -Force
-        write-output "Process $process Stopped"
+        Log "Process $process Stopped"
     }
 
     $UninstallPrograms = @(
@@ -2232,18 +2247,18 @@ if ($manufacturer -like "Lenovo") {
 
         if (Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app -ErrorAction SilentlyContinue) {
             Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $app | Remove-AppxProvisionedPackage -Online
-            write-output "Removed provisioned package for $app."
+            Log "Removed provisioned package for $app."
         }
         else {
-            write-output "Provisioned package for $app not found."
+            Log "Provisioned package for $app not found."
         }
 
         if (Get-AppxPackage -allusers -Name $app -ErrorAction SilentlyContinue) {
             Get-AppxPackage -allusers -Name $app | Remove-AppxPackage -AllUsers
-            write-output "Removed $app."
+            Log "Removed $app."
         }
         else {
-            write-output "$app not found."
+            Log "$app not found."
         }
 
         UninstallAppFull -appName $app
@@ -2261,7 +2276,7 @@ if ($manufacturer -like "Lenovo") {
     $lvs = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*", "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object DisplayName -eq "Lenovo Vantage Service"
     if (!([string]::IsNullOrEmpty($lvs.QuietUninstallString))) {
         $uninstall = "cmd /c " + $lvs.QuietUninstallString
-        write-output $uninstall
+        Log "$uninstall"
         Invoke-Expression $uninstall
     }
 
@@ -2275,13 +2290,13 @@ if ($manufacturer -like "Lenovo") {
     ##Check if exists
     $path = "c:\windows\system32\ImController.InfInstaller.exe"
     if (Test-Path $path) {
-        write-output "ImController.InfInstaller.exe exists"
+        Log "ImController.InfInstaller.exe exists"
         $uninstall = "cmd /c " + $path + " -uninstall"
-        write-output $uninstall
+        Log "$uninstall"
         Invoke-Expression $uninstall
     }
     else {
-        write-output "ImController.InfInstaller.exe does not exist"
+        Log "ImController.InfInstaller.exe does not exist"
     }
     ##Invoke-Expression -Command 'cmd.exe /c "c:\windows\system32\ImController.InfInstaller.exe" -uninstall'
 
@@ -2336,7 +2351,7 @@ if ($manufacturer -like "Lenovo") {
             invoke-expression -command .\uninstall.ps1 -ErrorAction SilentlyContinue
         }
         catch {
-            write-output "Failed to execute uninstall.ps1"
+            Log "Failed to execute uninstall.ps1"
         }
 
         write-output "All applications and associated Lenovo components have been uninstalled." -ForegroundColor Green
@@ -2353,10 +2368,10 @@ if ($manufacturer -like "Lenovo") {
             invoke-expression -command .\uninstall.ps1 -ErrorAction SilentlyContinue
         }
         catch {
-            write-output "Failed to execute uninstall.ps1"
+            Log "Failed to execute uninstall.ps1"
         }
 
-        write-output "All applications and associated Lenovo components have been uninstalled." -ForegroundColor Green
+        Log "All applications and associated Lenovo components have been uninstalled." -ForegroundColor Green
     }
 
 
@@ -2402,10 +2417,10 @@ if ($manufacturer -like "Lenovo") {
     $xritePath = "C:\Program Files (x86)\X-Rite Color Assistant\unins000.exe"
     if (Test-Path $xritePath) {
         Start-Process -FilePath $xritePath -ArgumentList "/SILENT" -Wait
-        write-output "X-Rite Color Assistant uninstalled."
+        Log "X-Rite Color Assistant uninstalled."
     }
     else {
-        write-output "X-Rite Color Assistant uninstaller not found."
+        Log "X-Rite Color Assistant uninstaller not found."
     }
 
 }
@@ -2434,7 +2449,7 @@ foreach ($user in $users) {
 
 #McAfee
 
-write-output "Detecting McAfee"
+Log "Detecting McAfee"
 $mcafeeinstalled = "false"
 $InstalledSoftware = Get-ChildItem "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall"
 foreach ($obj in $InstalledSoftware) {
@@ -2453,11 +2468,11 @@ foreach ($obj32 in $InstalledSoftware32) {
 }
 
 if ($mcafeeinstalled -eq "true") {
-    write-output "McAfee detected"
+    Log "McAfee detected"
     #Remove McAfee bloat
     ##McAfee
     ### Download McAfee Consumer Product Removal Tool ###
-    write-output "Downloading McAfee Removal Tool"
+    Log "Downloading McAfee Removal Tool"
     # Download Source
     $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mcafeeclean.zip'
 
@@ -2469,17 +2484,17 @@ if ($mcafeeinstalled -eq "true") {
 	write-host "Downloading $destination"
 	$attempt = 1
 	while($attempt -le 5) {
-		write-host "Download Attempt: $attempt"
+		Log "Download Attempt: $attempt"
 		if (test-path -path $destination) {remove-item -path $destination}
 		try {
 ##KHADD E
     Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 ##KHADD S
-			write-host "Download Complete"
+			Log "Download Complete"
 			break
 		}
 		Catch {
-			write-host "Download failed - retry"
+			Log "Download failed - retry"
 			$attempt++
 			start-sleep 10
 			ping www.github.com
@@ -2488,14 +2503,14 @@ if ($mcafeeinstalled -eq "true") {
 ##KHADD E
     Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 
-    write-output "Removing McAfee"
+    Log "Removing McAfee"
     # Automate Removal and kill services
     start-process "C:\ProgramData\Debloat\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
-    write-output "McAfee Removal Tool has been run"
+    Log "McAfee Removal Tool has been run"
 
     ###New MCCleanup
     ### Download McAfee Consumer Product Removal Tool ###
-    write-output "Downloading McAfee Removal Tool"
+    Log "Downloading McAfee Removal Tool"
     # Download Source
     $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mccleanup.zip'
 
@@ -2504,20 +2519,20 @@ if ($mcafeeinstalled -eq "true") {
 
     #Download the file
 #KHADD S This loop is insterted to allow for retries during unstable internet connections
-	write-host "Downloading $destination"
+	Log "Downloading $destination"
 	$attempt = 1
 	while($attempt -le 5) {
-		write-host "Download Attempt: $attempt"
+		Log "Download Attempt: $attempt"
 		if (test-path -path $destination) {remove-item -path $destination}
 		try {
 #KHADD E
 	Invoke-WebRequest -Uri $URL -OutFile $destination -Method Get
 #KHADD S
-			write-host "Download Complete"
+			Log "Download Complete"
 			break
 		}
 		Catch {
-			write-host "Download failed - retry"
+			Log "Download failed - retry"
 			$attempt++
 			start-sleep 10
 			ping www.github.com
@@ -2527,10 +2542,10 @@ if ($mcafeeinstalled -eq "true") {
     New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
     Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
 
-    write-output "Removing McAfee"
+    Log "Removing McAfee"
     # Automate Removal and kill services
     start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
-    write-output "McAfee Removal Tool has been run"
+    Log "McAfee Removal Tool has been run"
 
     $InstalledPrograms = $allstring | Where-Object { ($_.Name -like "*McAfee*") }
     $InstalledPrograms | ForEach-Object {
@@ -2557,7 +2572,7 @@ write-output "install2:$string2"	#KH
             }
             #$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode
             #$Null = $_ | Uninstall-Package -AllVersions -Force -ErrorAction Stop
-            write-output "Successfully uninstalled: [$($_.Name)]"
+            Log "Successfully uninstalled: [$($_.Name)]"
         }
         Catch { Write-Warning -Message "Failed to uninstall: [$($_.Name)]" }
     }
@@ -2581,11 +2596,10 @@ write-output "install2:$string2"	#KH
         Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
     }
     #Interesting emough, this producese an error, but still deletes the package anyway
-    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
-    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
-	Get-AppxPackage -allusers | Where-Object Name -eq "McAfeeWPSSparsePackage" | Remove-AppxPackage -Online -AllUsers
+    #get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
+    #get-appxpackage -allusers | sort-object name | format-table name, packagefullname
     Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
-write-output "Mcafee Removal all complete"		##KH
+Log "Mcafee Removal all complete"		##KH
 }
 
 ##Look for anything else
@@ -2645,7 +2659,7 @@ log "IsOOBEComplete:$IsOOBEComplete"
 if ($IsOOBEComplete -eq 0) {
 ##if (0 -eq 0) {
 
-    write-output "Still in OOBE, continue"
+    Log "Still in OOBE, continue"
     ##Apps to remove - NOTE: Chrome has an unusual uninstall so sort on it's own
     $blacklistapps = @(
 
@@ -2666,9 +2680,9 @@ if ($IsOOBEComplete -eq 0) {
 
         $versions = (Get-ItemProperty -path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome').version
         ForEach ($version in $versions) {
-            write-output "Found Chrome version $version"
+            Log "Found Chrome version $version"
             $directory = ${env:ProgramFiles(x86)}
-            write-output "Removing Chrome"
+            Log "Removing Chrome"
             Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
         }
 
@@ -2680,9 +2694,9 @@ if ($IsOOBEComplete -eq 0) {
 
         $versions = (Get-ItemProperty -path 'HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome').version
         ForEach ($version in $versions) {
-            write-output "Found Chrome version $version"
+            Log "Found Chrome version $version"
             $directory = ${env:ProgramFiles}
-            write-output "Removing Chrome"
+            Log "Removing Chrome"
             Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
         }
 
@@ -2790,8 +2804,8 @@ Log " Anything else removal complete $(get-date)"	##KH
 
 }
 else {
-    write-output "Intune detected, skipping removal of apps"
-    write-output "$intunecomplete number of apps detected"
+    Log "Intune detected, skipping removal of apps"
+    Log "$intunecomplete number of apps detected"
 
 }
 
@@ -2808,8 +2822,8 @@ else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
 
-write-output "Completed $(get-date)"	##KH
-write-output "Total Script $($runTimeFormatted)"
+Log "Completed""	##KH
+Log "Total Script $($runTimeFormatted)"
 
 #Set ProgressPreerence back
 $ProgressPreference = $OrginalProgressPreference
