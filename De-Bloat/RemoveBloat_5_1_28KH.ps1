@@ -2822,7 +2822,7 @@ else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
 
-Log "Completed"	##KH
+Log "Completed"	  ##KH
 Log "Total Script $($runTimeFormatted)"
 
 #Set ProgressPreerence back
@@ -2831,3 +2831,5 @@ $ProgressPreference = $OrginalProgressPreference
 	Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
 ##KH
 Stop-Transcript
+
+exit 0
