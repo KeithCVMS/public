@@ -62,6 +62,17 @@ Param(
     [Parameter(Mandatory = $False)] [switch] $ExcludeUpdates
 )
 
+#Log function added KH
+Function Log() {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory=$false)] [String] $message
+	)
+
+	$tz = [Regex]::Replace([System.TimeZoneInfo]::Local.StandardName, '([A-Z])\w+\s*', '$1')
+	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	Write-Output "$ts $tz -  $message"
+}
 
 Process {
 
@@ -92,9 +103,9 @@ Process {
     $script:needReboot = $false
 
 	$ci = Get-Computerinfo
-	write-host "OSversion:$($ci.OsName)"
-	write-host "OSBuild:$($ci.OsBuildNumber)"
-	write-host " "
+	Log "OSversion:$($ci.OsName)"
+	Log "OSBuild:$($ci.OsBuildNumber)"
+	Log " "
 
 #Now install OS Updates
     # Opt into Microsoft Update
@@ -126,7 +137,7 @@ Process {
         $WUUpdates = New-Object -ComObject Microsoft.Update.UpdateColl
 		write-host " " 
 		$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
-        Write-Host "$ts Getting $_ updates."        
+        Log "$ts Getting $_ updates"        
 <#
        ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
             if (!$_.EulaAccepted) { $_.AcceptEula() }
@@ -135,7 +146,6 @@ Process {
 #>
 		$CandidateUpdates = ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates 
 		ForEach ($CandidateUpdate in $CandidateUpdates) {
-			write-host "TitleFound:$($CandidateUpdate.Title)"
 			If ($CandidateUpdate.Title -notmatch "Preview") {
 				If ($CandidateUpdate | Get-Member EulaAccepted) {
 					if (!$CandidateUpdate.EulaAccepted) {
@@ -144,8 +154,7 @@ Process {
 				}
 				ForEach ($CandidateUpdateCategory in $CandidateUpdate.Categories) {
 					if ($CandidateUpdateCategory.CategoryID -ne "3689BDC8-B205-4AF4-8D4A-A63924C5E9D5" -and $CandidateUpdate -notin $WUUpdates) {
-						write-host "  TitleAdd:$($CandidateUpdate.Title)"
-						write-host "  Category:$($CandidateUpdateCategory.CategoryID)"
+						Log "  Title: $($CandidateUpdate.Title)"
 						[void]$WUUpdates.Add($CandidateUpdate)
 					}
 				}
@@ -153,7 +162,7 @@ Process {
 		}
 
 		write-host " "
-		write-host "UpdatesToDo:$($WUUpdates.Count)"
+		Log "UpdatesToDo: $($WUUpdates.Count)"
 		if ($WUUpdates.Count -ge 1) {
             $WUInstaller.ForceQuiet = $true
             $WUInstaller.Updates = $WUUpdates
@@ -162,14 +171,14 @@ Process {
             if ($UpdateCount -ge 1) {
                 $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                 Write-Output " $ts Downloading $UpdateCount Updates"
-                foreach ($update in $WUDownloader.Updates) { Write-Output "  Dwnld:$($update.Title)" }
+#                foreach ($update in $WUDownloader.Updates) { Write-Output "  Dwnld:$($update.Title)" }
                 $Download = $WUDownloader.Download()
             }
             $InstallUpdateCount = $WUInstaller.Updates.count
             if ($InstallUpdateCount -ge 1) {
                 $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                 Write-Output "$ts Installing $InstallUpdateCount Updates"
-                foreach ($update in $WUInstaller.Updates) { Write-Output "  Inst:$($update.Title)" }
+#                foreach ($update in $WUInstaller.Updates) { Write-Output "  Inst:$($update.Title)" }
 				$Install = $WUInstaller.Install()
                 $ResultMeaning = ($Results | Where-Object { $_.ResultCode -eq $Install.ResultCode }).Meaning
                 Write-Output $ResultMeaning
@@ -182,37 +191,37 @@ Process {
     }
 
     # Specify return code
-    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+#    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     if ($script:needReboot) {
-        Write-Host "$ts Windows Update indicated that a reboot is needed."
+        Log "Windows Update indicated that a reboot is needed."
     }
     else {
-        Write-Host "$ts Windows Update indicated that no reboot is required."
+        Log "Windows Update indicated that no reboot is required."
     }
 
     # For whatever reason, the reboot needed flag is not always being properly set.  So we always want to force a reboot.
     # If this script (as an app) is being used as a dependent app, then a hard reboot is needed to get the "main" app to
     # install.
-    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+#    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
 
  if ($Reboot -eq "Hard") {
-        Write-Host "$ts Exiting with return code 1641 to indicate a hard reboot is needed."
+        Log "Exiting with return code 1641 to indicate a hard reboot is needed."
         Stop-Transcript
         Exit 1641
     }
     elseif ($Reboot -eq "Soft") {
-        Write-Host "$ts Exiting with return code 3010 to indicate a soft reboot is needed."
+        Log "Exiting with return code 3010 to indicate a soft reboot is needed."
         Stop-Transcript
         Exit 3010
     }
     elseif ($Reboot -eq "Delayed") {
-        Write-Host "$ts Rebooting with a $RebootTimeout second delay"
+        Log "Rebooting with a $RebootTimeout second delay"
         & shutdown.exe /r /t $RebootTimeout /c "Rebooting to complete the installation of Windows updates."
         Stop-Transcript
         Exit 0
     }
     else {
-        Write-Host "$ts Skipping reboot based on Reboot parameter (None)"
+        Log "kipping reboot based on Reboot parameter (None)"
         Stop-Transcript
         Exit 0
     }
