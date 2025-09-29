@@ -1,4 +1,5 @@
 <#
+<#
 .SYNOPSIS
 .Removes bloat from a fresh Windows build
 .DESCRIPTION
@@ -677,64 +678,19 @@ foreach ($sid in $UserSIDs) {
 
 Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0
 
-$SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Siuf\Rules'" +
-		", 'PeriodInNanoSeconds', 1)"
-$setCmd
-invoke-expression $SetCmd
-
-foreach ($sid in $UserSIDs) {
-	write $sid
-}
 
 Log "Stopping the Windows Feedback Experience program"
 $SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\Software\Microsoft\Siuf\Rules'" +
 		", 'PeriodInNanoSeconds', 1)"
-$setCmd
 invoke-expression $SetCmd
 #
-<# $Period = "HKCU:\Software\Microsoft\Siuf\Rules"
-$ParentPeriod = "HKCU:\Software\Microsoft\Siuf"
-	Log "Key: $(Test-Path $Period)"
-	Log "Pnt: $(Test-Path $Period)"
-If (!(Test-Path $Period)) {
-	If (!(Test-Path $ParentPeriod)) {
-		New-Item $ParentPeriod
-		New-Item $Period
-	}
-	else {
-		New-Item $Period
-	}
-}
-Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
- #>
  
 ##Loop and do the same
 foreach ($sid in $UserSIDs) {
-$SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_USERS\$sid\Software\Microsoft\Siuf\Rules'" +
+	$SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_USERS\$sid\Software\Microsoft\Siuf\Rules'" +
 		", 'PeriodInNanoSeconds', 1)"
-Write-output "C:$setCmd"
-write-output "U:$sid"
-invoke-expression $SetCmd
-
-<#     $Period = "Registry::HKU\$sid\Software\Microsoft\Siuf\Rules"
-    $ParentPeriod = "Registry::HKU\$sid\Software\Microsoft\Siuf"
-	Log "Key: $(Test-Path $Period)"
-	Log "Pnt: $(Test-Path $Period)"
-	If (!(Test-Path $Period)) {
-		write-output "no rule"
-		If (!(Test-Path $ParentPeriod)) {
-			write-output "NoSiuf"
-			New-Item $ParentPeriod
-			#New-Item $Period
-		}
-		else {
-			write-output "no rule, but parent"
-			New-Item $Period
-		}
-	}
-	
-    Set-ItemProperty $Period PeriodInNanoSeconds -Value 0
- #>}
+	invoke-expression $SetCmd
+}
 
 ##Disables games from showing in Search bar
 Log "Adding Registry key to stop games from search bar"
@@ -807,19 +763,17 @@ If (!(Test-Path $WifiSense2)) {
 Set-ItemProperty $WifiSense2  Value -Value 0
 Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0
 
-#Disables live tiles
+
+#Disable live tiles
+Log "Disable Live Tiles"
 $SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_CURRENT_USER\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'" +
 		", 'NoTileApplicationNotification', 1)"
-write-host "C:$SetCmd"
 invoke-expression $SetCmd
 
- 
 ##Loop through users and do the same
 foreach ($sid in $UserSIDs) {
-	write-output "I: $sid"
 	$SetCmd = "[Microsoft.Win32.Registry]::SetValue('HKEY_USERS\$sid\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'" +
 			", 'NoTileApplicationNotification', 1)"
-	write-host "C:$SetCmd"
 	invoke-expression $SetCmd
 }
 
@@ -871,76 +825,34 @@ foreach ($sid in $UserSIDs) {
 }
 
 Log "Disabling Cortana"
-$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" +
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" +
 		"'HKEY_CURRENT_USER\SOFTWARE\Microsoft\Personalization\Settings', 'AcceptedPrivacyPolicy', 1)"
-write-host "C:$CmdCortana"
-invoke-expression $CmdCortana
-$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+invoke-expression $SetCmd
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 		"'HKEY_CURRENT_USER\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitTextCollection', 1)"
-write-host "C:$CmdCortana"
-invoke-expression $CmdCortana
-$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+invoke-expression $SetCmd
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 		"'HKEY_CURRENT_USER\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitInkCollection', 1)"
-write-host "C:$CmdCortana"
-invoke-expression $CmdCortana
-$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+invoke-expression $SetCmd
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 		"'HKEY_CURRENT_USER\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore', 'HarvestContacts', 1)"
-write-host "C:$CmdCortana"
-invoke-expression $CmdCortana
-
-<# If (!(Test-Path $Cortana1)) {
-    New-Item $Cortana1
-}
-
-Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 0
-If (!(Test-Path $Cortana2)) {
-    New-Item $Cortana2
-}
-Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 1
-Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 1
-If (!(Test-Path $Cortana3)) {
-    New-Item $Cortana3
-}
-Set-ItemProperty $Cortana3 HarvestContacts -Value 0
- #>
+invoke-expression $SetCmd
 
 ##Loop through users and do the same
 foreach ($sid in $UserSIDs) {
-	write-host "I:$sid"
-	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" +
+	$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" +
 			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\Personalization\Settings', 'AcceptedPrivacyPolicy', 1)"
-	write-host "C:$CmdCortana"
-	invoke-expression $CmdCortana
-	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+	invoke-expression $SetCmd
+	$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitTextCollection', 1)"
-	write-host "C:$CmdCortana"
-	invoke-expression $CmdCortana
-	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+	invoke-expression $SetCmd
+	$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitInkCollection', 1)"
-	write-host "C:$CmdCortana"
-	invoke-expression $CmdCortana
-	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
+	invoke-expression $SetCmd
+	$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore', 'HarvestContacts', 1)"
-	write-host "C:$CmdCortana"
-	invoke-expression $CmdCortana
-
-<#     $Cortana1 = "Registry::HKU\$sid\SOFTWARE\Microsoft\Personalization\Settings"
-    $Cortana2 = "Registry::HKU\$sid\SOFTWARE\Microsoft\InputPersonalization"
-    $Cortana3 = "Registry::HKU\$sid\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
-    If (!(Test-Path $Cortana1)) {
-        New-Item $Cortana1
-    }
-    Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 0
-    If (!(Test-Path $Cortana2)) {
-        New-Item $Cortana2
-    }
-    Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 1
-    Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 1
-    If (!(Test-Path $Cortana3)) {
-        New-Item $Cortana3
-    }
-    Set-ItemProperty $Cortana3 HarvestContacts -Value 0
- #>}
+	invoke-expression $SetCmd
+}
 
 
 #Removes 3D Objects from the 'My Computer' submenu in explorer
@@ -1324,10 +1236,12 @@ foreach ($sid in $UserSIDs) {
 #                                                                                                          #
 ############################################################################################################
 Log "Clearing Start Menu"
+Log "Commented out for CVM-MPA"
 #Delete layout file if it already exists
 
 ##Check windows version
 $version = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
+<#	#KH START comment this out as we replace start layout during AutopilotApps based on domain
 if ($version -like "*Windows 10*") {
     Log "Windows 10 Detected"
     Log "Removing Current Layout"
@@ -1355,7 +1269,6 @@ if ($version -like "*Windows 10*") {
 
     Write-Output "</LayoutModificationTemplate>" >> C:\Windows\StartLayout.xml
 }
-<#	#KH START comment this out as we replace start layout during AutopilotApps based on domain
 if ($version -like "*Windows 11*") {
     Log "Windows 11 Detected"
     Log "Removing Current Layout"
@@ -1416,32 +1329,9 @@ Log "Nonadmin1:$nonadminloggedon"
 ############################################################################################################
 
 Log "Removing Xbox Gaming"
-<# 	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
-			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitTextCollection', 1)"
-
-"intl.cpl,,/f:`"$($installFolder)$($config.Config.Language)`""
-
-        [Microsoft.Win32.RegistryKey]$HKUCoPilot = [Microsoft.Win32.Registry]::Users.CreateSubKey("temphive\Software\Policies\Microsoft\Windows\WindowsCopilot", [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree)
-		
-        $HKUCoPilot.SetValue($propertyName, $propertyValue, [Microsoft.Win32.RegistryValueKind]::DWord)
-		
-	$CmdCortana = "[Microsoft.Win32.Registry]::SetValue(" + 
-			"'HKEY_CURRENT_USER\$sid\SOFTWARE\Microsoft\InputPersonalization', 'RestrictImplicitTextCollection', 1)"
-	write-host "C:$CmdCortana"
-	invoke-expression $CmdCortana
-
-[microsoft.win32.registry]::SetValue("HKEY_CURRENT_USER\Software\Test", "Test-String", "Testing")
-[microsoft.win32.registry]::SetValue("HKEY_CURRENT_USER\Software\Test", "Test-DW", 0xff)
-
-$RegName = '2233969290'
-$RegPath = 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Policies\Microsoft\FeatureManagement\Overrides\'
-$RegData = 0  
-#>
-  
-#New-ItemProperty -Path "HKLM:\System\CurrentControlSet\Services\xbgm" -Name "Start" -PropertyType DWORD -Value 4 -Force
-$CmdSet = "[Microsoft.Win32.Registry]::SetValue(" + 
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\xbgm', 'Start', 4, [Microsoft.Win32.RegistryValueKind]::DWORD)"
-invoke-expression $CmdSet
+invoke-expression $SetCmd
 Set-Service -Name XblAuthManager -StartupType Disabled
 Set-Service -Name XblGameSave -StartupType Disabled
 Set-Service -Name XboxGipSvc -StartupType Disabled
@@ -1466,38 +1356,32 @@ if (Test-Path "$env:WinDir\System32\GameBarPresenceWriter.exe") {
     # Apply new rule
     $NewAcl.SetAccessRule($fileSystemAccessRule)
     Set-Acl -Path "$env:WinDir\System32\GameBarPresenceWriter.exe" -AclObject $NewAcl
-    Stop-Process -Name "GameBarPresenceWriter.exe" -Force ##SC##-ErrorAction SilentlyContinue
-    Remove-Item "$env:WinDir\System32\GameBarPresenceWriter.exe" -Force -Confirm:$false
+	Stop-Process -Name "GameBarPresenceWriter.exe" -Force -ErrorAction SilentlyContinue 
+	Remove-Item "$env:WinDir\System32\GameBarPresenceWriter.exe" -Force -Confirm:$false
 
 }
 else {
     Log "GamePresenceWriter.exe does not exist"
 }
 
-#New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\GameDVR" -Name "AllowgameDVR" -PropertyType DWORD -Value 0 -Force
-$CmdSet = "[Microsoft.Win32.Registry]::SetValue(" + 
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\GameDVR', 'AllowgameDVR', 0, [Microsoft.Win32.RegistryValueKind]::DWORD)"
-invoke-expression $CmdSet
-#New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" -Name "SettingsPageVisibility" -PropertyType String -Value #"hide:gaming-gamebar;gaming-gamedvr;gaming-broadcasting;gaming-gamemode;gaming-xboxnetworking" -Force
-$CmdSet = "[Microsoft.Win32.Registry]::SetValue(" + 
+invoke-expression $SetCmd
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer', 'SettingsPageVisibility', " +
 			"'hide:gaming-gamebar;gaming-gamedvr;gaming-broadcasting;gaming-gamemode;gaming-xboxnetworking')"
-invoke-expression $CmdSet
-Remove-Item C:\Windows\Temp\SetACL.exe -recurse ##SC##-ErrorAction SilentlyContinue
+invoke-expression $SetCmd
+Remove-Item C:\Windows\Temp\SetACL.exe -recurse -ErrorAction SilentlyContinue
 
 ############################################################################################################
 #                                        Disable Edge Surf Game                                            #
 #                                                                                                          #
 ############################################################################################################
 $surf = "HKLM:\SOFTWARE\Policies\Microsoft\Edge"
-<# If (!(Test-Path $surf)) {
-    New-Item $surf
-}
-New-ItemProperty -Path $surf -Name 'AllowSurfGame' -Value 0 -PropertyType DWord
- #>
-$CmdSet = "[Microsoft.Win32.Registry]::SetValue(" + 
+
+$SetCmd = "[Microsoft.Win32.Registry]::SetValue(" + 
 			"'HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge', 'AllowSurfGame', 0, [Microsoft.Win32.RegistryValueKind]::DWORD)"
-invoke-expression $CmdSet
+invoke-expression $SetCmd
 
 
 ############################################################################################################
@@ -1530,10 +1414,11 @@ Log "Checking 32-bit System Registry"
 ##Search for 32-bit versions and list them
 $allstring = @()
 $path1 = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-#Loop Through the apps if name has Adobe and NOT reader
+#Loop Through the apps 
 $32apps = Get-ChildItem -Path $path1 | Get-ItemProperty | Select-Object -Property DisplayName, UninstallString
 
 foreach ($32app in $32apps) {
+	write-output "   - $($32app.DisplayName)"
     #Get uninstall string
     $string1 = $32app.uninstallstring
     #Check if it's an MSI install
@@ -1562,10 +1447,11 @@ Log "Checking 64-bit System registry"
 ##Search for 64-bit versions and list them
 
 $path2 = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-#Loop Through the apps if name has Adobe and NOT reader
+#Loop Through the apps 
 $64apps = Get-ChildItem -Path $path2 | Get-ItemProperty | Select-Object -Property DisplayName, UninstallString
 
 foreach ($64app in $64apps) {
+	write-output "   - $($64app.DisplayName)"
     #Get uninstall string
     $string1 = $64app.uninstallstring
     #Check if it's an MSI install
@@ -1598,11 +1484,12 @@ Log "Checking 32-bit User Registry"
 $path1 = "HKCU:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
 ##Check if path exists
 if (Test-Path $path1) {
-    #Loop Through the apps if name has Adobe and NOT reader
+    #Loop Through the apps
     $32apps = Get-ChildItem -Path $path1 | Get-ItemProperty | Select-Object -Property DisplayName, UninstallString
 
     foreach ($32app in $32apps) {
-        #Get uninstall string
+		write-output "   - $($32app.DisplayName)"
+       #Get uninstall string
         $string1 = $32app.uninstallstring
         #Check if it's an MSI install
         if ($string1 -match "^msiexec*") {
@@ -1630,36 +1517,37 @@ Log "Checking 64-bit Use registry"
 ##Search for 64-bit versions and list them
 
 $path2 = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
-#Loop Through the apps if name has Adobe and NOT reader
-$64apps = Get-ChildItem -Path $path2 | Get-ItemProperty | Select-Object -Property DisplayName, UninstallString 
+#Loop Through the apps 
+if (Test-Path $path2) {
+	$64apps = Get-ChildItem -Path $path2 | Get-ItemProperty | Select-Object -Property DisplayName, UninstallString 
 
-foreach ($64app in $64apps) {
-    #Get uninstall string
-    $string1 = $64app.uninstallstring
-    #Check if it's an MSI install
-    if ($string1 -match "^msiexec*") {
-        #MSI install, replace the I with an X and make it quiet
-        $string2 = $string1 + " /quiet /norestart"
-        $string2 = $string2 -replace "/I", "/X "
-        #Uninstall with string2 params
-        $allstring += New-Object -TypeName PSObject -Property @{
-            Name   = $64app.DisplayName
-            String = $string2
-        }
-    }
-    else {
-        #Exe installer, run straight path
-        $string2 = $string1
-        $allstring += New-Object -TypeName PSObject -Property @{
-            Name   = $64app.DisplayName
-            String = $string2
-        }
-    }
-
+	foreach ($64app in $64apps) {
+	write-output "   - $($64app.DisplayName)"
+		#Get uninstall string
+		$string1 = $64app.uninstallstring
+		#Check if it's an MSI install
+		if ($string1 -match "^msiexec*") {
+			#MSI install, replace the I with an X and make it quiet
+			$string2 = $string1 + " /quiet /norestart"
+			$string2 = $string2 -replace "/I", "/X "
+			#Uninstall with string2 params
+			$allstring += New-Object -TypeName PSObject -Property @{
+				Name   = $64app.DisplayName
+				String = $string2
+			}
+		}
+		else {
+			#Exe installer, run straight path
+			$string2 = $string1
+			$allstring += New-Object -TypeName PSObject -Property @{
+				Name   = $64app.DisplayName
+				String = $string2
+			}
+		}
+	}
 }
 
-
-function UninstallAppFull {
+Function UninstallAppFull {
 
     param (
         [string]$appName
@@ -1708,15 +1596,14 @@ $details = Get-CimInstance -ClassName Win32_ComputerSystem
 $manufacturer = $details.Manufacturer
 
 if ($manufacturer -like "*ASUS*") {
-	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and vivobook(consumer) laptops in my lab currently
+	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and Vivobook(consumer) laptops in my lab currently
     Log "ASUS detected"
     write-output ""
 	#Remove ASUS bloat
+	##ASUS OEMcode = B9ECED6F
+	
 	
     ##ASUS Specific 
-	##ASUS OEMcode = B9ECED6F ??
-	
-	
     ##You can decide which, if any, you wish to keep by including in customwhitelist
 	$UninstallPrograms = @(
 		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
@@ -1755,11 +1642,11 @@ if ($manufacturer -like "*ASUS*") {
     }
 
     ##Belt and braces, remove via CIM too
-    foreach ($program in $UninstallPrograms) {
-        Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
-    }
+    #foreach ($program in $UninstallPrograms) {
+    #    Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
+    #}
 
-	Log "Removing Asus Theme and background"
+	Log "Removing Asus Theme and background as necessary"
 	##Remove Asus theme and background image
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes"
 
@@ -1773,12 +1660,6 @@ if ($manufacturer -like "*ASUS*") {
 		Remove-ItemProperty -Path $registryPath -Name "DesktopBackground"
 	}
 
-	#Clear Registry keys to delete the pre-loaded MSEdge favorites
-	$Keys = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems" | select-object pspath
-	ForEach ($Key in $Keys) {
-		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
-	}
-	
 	#Clear the pre-defined ASUS task bar definition file and registry key as it will override default user settings
     if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
 		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
@@ -1787,7 +1668,8 @@ if ($manufacturer -like "*ASUS*") {
 		cmd /c reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "LayoutXMLPath" /f
 	}
 
-} #end ASUS specific
+} 
+#end ASUS specific
 
 if ($manufacturer -like "*HP*") {
     Log "HP detected"
@@ -2499,8 +2381,14 @@ if ($manufacturer -like "Lenovo") {
 
 
 ##Remove bookmarks
+Log "Removing stored MSEdge bookmarks"
+#Clear Registry keys to delete the pre-loaded SYSTEM MSEdge favorites
+$Keys = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\MicrosoftEdge\Main\FavoriteBarItems" | select-object pspath
+ForEach ($Key in $Keys) {
+	Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
+}
 
-##Enumerate all users
+##Enumerate all users and remove individual bookmarks
 $users = Get-ChildItem -Path "C:\Users" -Directory
 foreach ($user in $users) {
     $userpath = $user.FullName
@@ -2520,6 +2408,35 @@ foreach ($user in $users) {
 ############################################################################################################
 
 #McAfee
+Function DwnldWithRetry() {
+	[CmdletBinding()]
+	param (
+		[Parameter(Mandatory=$true)] [String] $DwrURL,
+		[Parameter(Mandatory=$true)] [String] $DwrDest
+	)
+
+Log "Downloading $DwrURL to $DwrDest"
+$attempt = 1
+while($attempt -le 5) {
+#		Log "Download Attempt: $attempt"
+	if (test-path -path $DwrDest) {remove-item -path $DwrDest}
+	try {
+		Invoke-WebRequest -Uri $DwrURL -OutFile $DwrDest -Method Get
+		Log "Download Complete - $DwrURL"
+		break
+	}
+	Catch {
+#			Log "Download failed - retry"
+		$attempt++
+		start-sleep 10
+		ping www.github.com
+	}
+}
+if ($attempt -gt 5) {
+	Log "****Download Failed - $DwrURL******"
+}
+
+}
 
 Log "Detecting McAfee"
 $mcafeeinstalled = "false"
@@ -2552,7 +2469,8 @@ if ($mcafeeinstalled -eq "true") {
     $destination = 'C:\ProgramData\Debloat\mcafee.zip'
 
     #Download the file
-#KHADD S This loop is insterted to allow for retries during unstable internet connections
+	DwnldWithRetry -DwrURL $URL  -DwrDest $destination	
+<# 	#KHADD S This loop is insterted to allow for retries during unstable internet connections
 	Log "Downloading $destination"
 	$attempt = 1
 	while($attempt -le 5) {
@@ -2573,7 +2491,8 @@ if ($mcafeeinstalled -eq "true") {
 		}
 	}
 ##KHADD E
-    Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
+ #>
+	Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
 
     Log "Removing McAfee-1"
     # Automate Removal and kill services
@@ -2590,7 +2509,8 @@ if ($mcafeeinstalled -eq "true") {
     $destination = 'C:\ProgramData\Debloat\mcafeenew.zip'
 
     #Download the file
-#KHADD S This loop is insterted to allow for retries during unstable internet connections
+	DwnldWithRetry -DwrURL $URL  -DwrDest $destination
+<# #KHADD S This loop is insterted to allow for retries during unstable internet connections
 	Log "Downloading $destination"
 	$attempt = 1
 	while($attempt -le 5) {
@@ -2611,7 +2531,8 @@ if ($mcafeeinstalled -eq "true") {
 		}
 	}
 #KHADD E
-    New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
+ #>
+	New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
     Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
 
     Log "Removing McAfee-2"
@@ -2624,7 +2545,6 @@ if ($mcafeeinstalled -eq "true") {
 
         write-output "Attempting to uninstall: [$($_.Name)]..."
         $uninstallcommand = $_.String
-write-output "uninstall: [$($_.String)]"	#KH
 		
         Try {
             if ($uninstallcommand -match "^msiexec*") {
@@ -2633,13 +2553,11 @@ write-output "uninstall: [$($_.String)]"	#KH
                 $uninstallcommand = $uninstallcommand + " /quiet /norestart"
                 $uninstallcommand = $uninstallcommand -replace "/I", "/X "
                 #Uninstall with string2 params
-write-output "uninstParm: $uninstallcommand"	#KH
                 Start-Process 'msiexec.exe' -ArgumentList $uninstallcommand -NoNewWindow -Wait ##SC##-ErrorAction SilentlyContinue
             }
             else {
                 #Exe installer, run straight path
                 $string2 = $uninstallcommand
-write-output "install2:$string2"	#KH				
                 start-process $string2  ##SC##-ErrorAction SilentlyContinue
             }
             #$A = Start-Process -FilePath $uninstallcommand -Wait -passthru -NoNewWindow;$a.ExitCode
@@ -2670,6 +2588,7 @@ write-output "install2:$string2"	#KH
     #Interesting emough, this producese an error, but still deletes the package anyway
     #get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
     #get-appxpackage -allusers | sort-object name | format-table name, packagefullname
+	write-output "Try McAfeeWPSSparsePackage again"
     Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 Log "Mcafee Removal all complete"		##KH
 }
@@ -2680,14 +2599,15 @@ Log "Mcafee Removal all complete"		##KH
 
 $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
 #KHADD S change to ensure proper values
-# $intunecomplete = @(Get-ChildItem $intunepath).count
-if (Test-Path $intunepath) {
+$intunecomplete = @(Get-ChildItem $intunepath -ErrorAction SilentlyContinue).count
+write-output "intunecomplete - $intunecomplete"
+<# if (Test-Path $intunepath) {
 	$intunecomplete = @(Get-ChildItem $intunepath).count
 } else {
 	$intunecomplete = 0
 }
-
 ##KHADD E
+#>
 $userpath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"
 $userprofiles = Get-ChildItem $userpath | Get-ItemProperty
 
@@ -2754,7 +2674,6 @@ if ($IsOOBEComplete -eq 0) {
             Log "Removing Chrome"
             Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
         }
-
     }
 
     $chromepath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Google Chrome"
@@ -2768,8 +2687,6 @@ if ($IsOOBEComplete -eq 0) {
             Log "Removing Chrome"
             Start-Process "$directory\Google\Chrome\Application\$version\Installer\setup.exe" -argumentlist  "--uninstall --multi-install --chrome --system-level --force-uninstall"
         }
-
-
     }
 
 
