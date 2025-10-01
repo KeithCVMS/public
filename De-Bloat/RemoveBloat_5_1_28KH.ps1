@@ -209,12 +209,12 @@ Function Log() {
 	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
 	Write-Output "$ts $tz -  $message"
 }
+#Log function end
 
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
-##$ErrorActionPreference = 'silentlycontinue'
-$ErrorActionPreference = 'continue'
+$ErrorActionPreference = 'SilentlyContinue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
@@ -588,9 +588,6 @@ foreach ($appxapp in $appxinstalled) {
 
 ##We need to grab all SIDs to remove at user level
 $UserSIDs = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList" | Select-Object -ExpandProperty PSChildName
-foreach ($sid in $UserSIDs) {
-	write $sid
-}
 
 #These are the registry keys that it will delete.
 
@@ -2600,7 +2597,6 @@ Log "Mcafee Removal all complete"		##KH
 $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
 #KHADD S change to ensure proper values
 $intunecomplete = @(Get-ChildItem $intunepath -ErrorAction SilentlyContinue).count
-write-output "intunecomplete - $intunecomplete"
 <# if (Test-Path $intunepath) {
 	$intunecomplete = @(Get-ChildItem $intunepath).count
 } else {
@@ -2645,7 +2641,6 @@ Add-Type -TypeDefinition $TypeDef -Language CSharp
 $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
-log "IsOOBEComplete:$IsOOBEComplete"
 if ($IsOOBEComplete -eq 0) {
 
     Log "Still in OOBE, continue"
@@ -2813,9 +2808,6 @@ Log "Total Script $($runTimeFormatted)"
 
 #Set ProgressPreerence back
 $ProgressPreference = $OrginalProgressPreference
-#KH write out completion time to tag File
-	Add-Content -Path "$DebloatTag" -Value "Complete Script $(get-date)"
-##KH
 Stop-Transcript
 
 exit 0
