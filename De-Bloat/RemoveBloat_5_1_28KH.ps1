@@ -16,7 +16,7 @@
 
 .INPUTS
 .OUTPUTS
-C:\ProgramData\Debloat\Debloat.log
+C:\ProgramData\CVMMPA\Debloat.log
 .NOTES
   Version:        5.1.28
   Author:         Andrew Taylor
@@ -221,19 +221,24 @@ $ProgressPreference = 'SilentlyContinue'
 
 
 #Create Folder
-$DebloatFolder = "C:\ProgramData\Debloat"
-If (Test-Path $DebloatFolder) {
-    Log "$DebloatFolder exists. Skipping."
+#Check root first
+$DebloatLogFldr = "C:\ProgramData\CVMMPA"
+If (!(Test-Path $DebloatLogFldr)) {
+    New-Item -Path "$DebloatLogFldr" -ItemType Directory
+    Log "The folder $DebloatLogFldr was successfully created."
 }
-Else {
-    Log "The folder '$DebloatFolder' doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
-    Start-Sleep 1
+$DebloatLog = "$DebloatLogFldr\Debloat.log"
+
+#Check app folder
+$DebloatFolder = "C:\ProgramData\CVMMPA\Debloat"
+If (!(Test-Path $DebloatFolder)) {
     New-Item -Path "$DebloatFolder" -ItemType Directory
     Log "The folder $DebloatFolder was successfully created."
 }
 
-Start-Transcript -Path "C:\ProgramData\Debloat\Debloat.log"
+Start-Transcript -Path "$DebloatLog"
 Log "**************VERSION 5_1_28KH***********************"
+write-host " "
 
 #KH S This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
@@ -241,11 +246,14 @@ Log "**************VERSION 5_1_28KH***********************"
 #KH      if coupled with a companion launching script 
 #KH This section EXITS if the script has been previouly run in a preprov environment 
 #KH      (based on the default user running the script).
-$DebloatTag = "$DebloatFolder\Debloat.tag"
+$DebloatTag = "$DebloatLogFldr\Debloat.tag"
 
-$Env:UserName
+#$Env:UserName
 $UsrNm = $Env:UserName
 $CurrProf = $Env:Userprofile
+Log "Username: $UsrNm"
+Log "Profile:  $CurrProf"
+write-host " "
 
 If (Test-Path $DebloatTag) {
 	if ($CurrProf -like "*systemprofile*") {
@@ -2463,7 +2471,7 @@ if ($mcafeeinstalled -eq "true") {
     $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mcafeeclean.zip'
 
     # Set Save Directory
-    $destination = 'C:\ProgramData\Debloat\mcafee.zip'
+    $destination = "$($DebloatFolder)\mcafee.zip"
 
     #Download the file
 	DwnldWithRetry -DwrURL $URL  -DwrDest $destination	
@@ -2489,11 +2497,11 @@ if ($mcafeeinstalled -eq "true") {
 	}
 ##KHADD E
  #>
-	Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat" -Force
+	Expand-Archive $destination -DestinationPath $DebloatFolder -Force
 
     Log "Removing McAfee-1"
     # Automate Removal and kill services
-    start-process "C:\ProgramData\Debloat\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
+    start-process "$($DebloatFolder)\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
     Log "McAfee Removal Tool has been run"
 
     ###New MCCleanup
@@ -2503,7 +2511,7 @@ if ($mcafeeinstalled -eq "true") {
     $URL = 'https://github.com/andrew-s-taylor/public/raw/main/De-Bloat/mccleanup.zip'
 
     # Set Save Directory
-    $destination = 'C:\ProgramData\Debloat\mcafeenew.zip'
+    $destination = "$($DebloatFolder)\mcafeenew.zip"
 
     #Download the file
 	DwnldWithRetry -DwrURL $URL  -DwrDest $destination
@@ -2529,12 +2537,12 @@ if ($mcafeeinstalled -eq "true") {
 	}
 #KHADD E
  #>
-	New-Item -Path "C:\ProgramData\Debloat\mcnew" -ItemType Directory
-    Expand-Archive $destination -DestinationPath "C:\ProgramData\Debloat\mcnew" -Force
+	New-Item -Path "$($DebloatFolder)\mcnew" -ItemType Directory
+    Expand-Archive $destination -DestinationPath "$($DebloatFolder)\mcnew" -Force
 
     Log "Removing McAfee-2"
     # Automate Removal and kill services
-    start-process "C:\ProgramData\Debloat\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
+    start-process "$($DebloatFolder)\mcnew\Mccleanup.exe" -ArgumentList "-p StopServices,MFSY,PEF,MXD,CSP,Sustainability,MOCP,MFP,APPSTATS,Auth,EMproxy,FWdiver,HW,MAS,MAT,MBK,MCPR,McProxy,McSvcHost,VUL,MHN,MNA,MOBK,MPFP,MPFPCU,MPS,SHRED,MPSCU,MQC,MQCCU,MSAD,MSHR,MSK,MSKCU,MWL,NMC,RedirSvc,VS,REMEDIATION,MSC,YAP,TRUEKEY,LAM,PCB,Symlink,SafeConnect,MGS,WMIRemover,RESIDUE -v -s"
     Log "McAfee Removal Tool has been run"
 
     $InstalledPrograms = $allstring | Where-Object { ($_.Name -like "*McAfee*") }
@@ -2723,15 +2731,15 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 		## Remove All Office Products XML End
 
 		##write XML to the debloat folder
-		$xml | Out-File -FilePath "C:\ProgramData\Debloat\o365.xml"
+		$xml | Out-File -FilePath "$($DebloatFolder)\o365.xml"
 
 		##Download the Latest ODT URI obtained from Stealthpuppy's Evergreen PS Module
 		$odturl = "https://officecdn.microsoft.com/pr/wsus/setup.exe"
-		$odtdestination = "C:\ProgramData\Debloat\setup.exe"
+		$odtdestination = "$($DebloatFolder)\setup.exe"
 		Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicParsing
 
 		##Run it
-		Start-Process -FilePath "C:\ProgramData\Debloat\setup.exe" -ArgumentList "/configure C:\ProgramData\Debloat\o365.xml" -WindowStyle Hidden -Wait
+		Start-Process -FilePath "C$($DebloatFolder)\setup.exe" -ArgumentList "/configure $($DebloatFolder)\o365.xml" -WindowStyle Hidden -Wait
 		
 		Log "Completed Office removal"
 		
@@ -2751,7 +2759,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 		# and is set to do OfficeScrubScenario
 	$URL = 'https://github.com/keithcvms/public/raw/main/De-Bloat/ExecuteSaraOfficeUninstall.ps1'
 	# Set Save Directory
-	$destination = 'C:\ProgramData\Debloat\ExecuteSaraOfficeUninstall.ps1'
+	$destination = '$($DebloatFolder)\ExecuteSaraOfficeUninstall.ps1'
 	#Download the file
 	write-host "Downloading $destination"
 	$attempt = 1
