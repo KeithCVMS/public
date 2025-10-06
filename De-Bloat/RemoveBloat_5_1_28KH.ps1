@@ -2739,7 +2739,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 		Invoke-WebRequest -Uri $odturl -OutFile $odtdestination -Method Get -UseBasicParsing
 
 		##Run it
-		Start-Process -FilePath "C$($DebloatFolder)\setup.exe" -ArgumentList "/configure $($DebloatFolder)\o365.xml" -WindowStyle Hidden -Wait
+		Start-Process -FilePath "$($DebloatFolder)\setup.exe" -ArgumentList "/configure $($DebloatFolder)\o365.xml" -WindowStyle Hidden -Wait
 		
 		Log "Completed Office removal"
 		
