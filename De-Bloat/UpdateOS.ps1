@@ -81,11 +81,6 @@ Process {
 	}
 	#End Log Function KH
 
-#Set TimeZone
-
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
-
-	
     # If we are running as a 32-bit process on an x64 system, re-launch as a 64-bit process
     if ("$env:PROCESSOR_ARCHITEW6432" -ne "ARM64") {
         if (Test-Path "$($env:WINDIR)\SysNative\WindowsPowerShell\v1.0\powershell.exe") {
@@ -108,8 +103,14 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/
 
     # Start logging
     Start-Transcript "$($env:ProgramData)\CVMMPA\UpdateOS.log"	#KH
+	write-host "*****************************************************"
+	write-host "***************UpdateOS.ps1**************************"
+	write-host ""
+	
+	#Set TimeZone
+	Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
 
-    # Main logic
+   # Main logic
     $script:needReboot = $false
 
     $ci = Get-Computerinfo				#KH
