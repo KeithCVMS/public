@@ -211,10 +211,6 @@ Function Log() {
 }
 #Log function end
 
-#Set TimeZone
-
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
-
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
@@ -240,8 +236,12 @@ If (!(Test-Path $DebloatFolder)) {
 }
 
 Start-Transcript -Path "$DebloatLog"
-Log "**************VERSION 5_1_28KH***********************"
-write-host " "
+write-host "***********************************************************"
+Log        "*****************VERSION 5_1_28KH**************************"
+write-host "***********************************************************"
+#Set TimeZone
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
 
 #KH S This uses a "tag" file to determine whether the script has been run previously
 #KH The "tag" file also provides a quick way to manually or from Intune to check for its presence on a System
