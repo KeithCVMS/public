@@ -211,6 +211,10 @@ Function Log() {
 }
 #Log function end
 
+#Set TimeZone
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
+
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
@@ -218,7 +222,6 @@ $ErrorActionPreference = 'SilentlyContinue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
-
 
 #Create Folder
 #Check root first
