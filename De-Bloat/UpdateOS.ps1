@@ -80,6 +80,11 @@ Process {
 		Write-Output "$ts $tz -  $message"
 	}
 	#End Log Function KH
+
+#Set TimeZone
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
+
 	
     # If we are running as a 32-bit process on an x64 system, re-launch as a 64-bit process
     if ("$env:PROCESSOR_ARCHITEW6432" -ne "ARM64") {
@@ -226,5 +231,11 @@ Process {
     else {
         Log " Windows Update indicated that no reboot is required."
     }
+
+#Set TimeZone
+
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
+
+
     Exit 0
 }
