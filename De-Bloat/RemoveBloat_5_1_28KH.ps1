@@ -1657,19 +1657,23 @@ if ($manufacturer -like "*ASUS*") {
 
 	# Check and remove ThemeName if it exists
 	if (Get-ItemProperty -Path $registryPath -Name "ThemeName" -ErrorAction SilentlyContinue) {
+		Log "remove Asus Theme"
 		Remove-ItemProperty -Path $registryPath -Name "ThemeName"
 	}
 
 	# Check and remove DesktopBackground if it exists
 	if (Get-ItemProperty -Path $registryPath -Name "DesktopBackground" -ErrorAction SilentlyContinue) {
+		Log "Remove Asus deskbkgrnd"
 		Remove-ItemProperty -Path $registryPath -Name "DesktopBackground"
 	}
 
 	#Clear the pre-defined ASUS task bar definition file and registry key as it will override default user settings
     if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
+		Log "remove asus taskbar"
 		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
 	}
 	if ((Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction Stop).Property -eq "LayoutXMLPath") {
+		Log "remove Asus layoutxmlpath"
 		cmd /c reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "LayoutXMLPath" /f
 	}
 
