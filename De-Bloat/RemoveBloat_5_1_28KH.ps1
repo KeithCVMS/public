@@ -1671,7 +1671,7 @@ if ($manufacturer -like "*ASUS*") {
 	}
 
 	#Clear the pre-defined ASUS task bar definition file and registry key as it will override default user settings
-    if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
+<#     if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
 		Log "remove asus taskbar"
 		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
 	}
@@ -1679,7 +1679,7 @@ if ($manufacturer -like "*ASUS*") {
 		Log "remove Asus layoutxmlpath"
 		cmd /c reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "LayoutXMLPath" /f
 	}
-
+ #>
 } 
 #end ASUS specific
 
