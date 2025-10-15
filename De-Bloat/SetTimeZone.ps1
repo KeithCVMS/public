@@ -16,18 +16,16 @@ Function Log() {
 
 If ($CVMtz -ieq (Get-TimeZone).Id) {
 	Log "TimeZone currently set correctly:"
-	Get-TimeZone
+	(Get-TimeZone).DisplayName
 }
 Else { 
 	Log "Current TimeZone: "
-	Get-TimeZone
+	(Get-TimeZone).DisplayName
 
 	Log "set TimeZone to: $CVMtz"
 	# Set the timezone
-	Set-TimeZone -Id $CVMtz -PassThru
+	Set-TimeZone -Id $CVMtz 
 
 	Log "New TimeZone: "
-	Get-TimeZone
+	(Get-TimeZone).DisplayName
 }
-
-#Stop-Transcript
