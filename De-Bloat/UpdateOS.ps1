@@ -40,11 +40,6 @@ Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
 
 KH changes	added Log function
-			inclusion of NETFX3 install here rather than in AutopilotBranding
-			change of paths for CVMMPA locations
-			part of cahnge to call updateos from intune platform script rather than win32
-   		if (!$_.EulaAccepted) { $_.AcceptEula() } patch courtesy mdmplayground
-
 #>
 
 <#
@@ -63,8 +58,6 @@ Param(
     [Parameter(Mandatory = $False)] [switch] $ExcludeDrivers,
     [Parameter(Mandatory = $False)] [switch] $ExcludeUpdates
 )
-
-
 
 Process {
 
@@ -102,7 +95,7 @@ Process {
     Set-Content -Path "$($env:ProgramData)\CVMMPA\UpdateOS.tag" -Value "Start Script $(get-date)"	#KH
 
     # Start logging
-    Start-Transcript "$($env:ProgramData)\CVMMPA\UpdateOS.log"	#KH
+    Start-Transcript "$($env:ProgramData)\CVMMPA\UpdateOS.log" -Append	#KH
 	write-host "*****************************************************"
 	write-host "***************UpdateOS.ps1**************************"
 	write-host ""
@@ -110,7 +103,7 @@ Process {
 	#Set TimeZone
 	Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
 
-   # Main logic
+    # Main logic
     $script:needReboot = $false
 
     $ci = Get-Computerinfo				#KH
@@ -119,7 +112,7 @@ Process {
 	Write-Host " "					#KH
 
 	#Now install OS Updates
-	# Opt into Microsoft Update
+    # Opt into Microsoft Update
 #    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     Log "Opting into Microsoft Update"
     $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
@@ -128,7 +121,7 @@ Process {
 
     # Install all available updates
     Log "Install OS Update"
-	$WUDownloader = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateDownloader()
+    $WUDownloader = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateDownloader()
     $WUInstaller = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateInstaller()
     if ($ExcludeDrivers) {
         # Updates only
@@ -170,7 +163,7 @@ Process {
 
 #    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     if ($WUUpdates.Count -eq 0) {
-       Log "No Updates Found"
+        Log "No Updates Found"
         Exit 0
     } else {
         Log "Updates found: $($WUUpdates.count)"
