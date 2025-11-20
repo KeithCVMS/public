@@ -2961,7 +2961,7 @@ foreach ($user in $userprofiles) {
         break
     }
 }
-$TypeDef = @"
+<#$TypeDef = @"		#comment out becaseu of initial oobe check
 
 using System;
 using System.Text;
@@ -2979,6 +2979,7 @@ namespace Api
 "@
 
 Add-Type -TypeDefinition $TypeDef -Language CSharp
+#>
 
 $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
@@ -3057,7 +3058,7 @@ if (test-path -path 'C:\Program Files\Common Files\Microsoft Shared\ClickToRun\O
 
 		## Remove All Office Products XML Start ##
 
-    $xml = @"
+$xml = @"
 <Configuration>
   <Display Level="None" AcceptEULA="True" />
   <Property Name="FORCEAPPSHUTDOWN" Value="True" />
