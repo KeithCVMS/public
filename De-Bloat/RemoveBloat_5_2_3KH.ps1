@@ -292,7 +292,7 @@ Add-Type -TypeDefinition $TypeDef -Language CSharp
 $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 
-if ($IsOOBEComplete or ($IsOOBEComplete -eq ‘1’)) {
+if ($IsOOBEComplete -or ($IsOOBEComplete -eq '1')) {
 	Log "OOBE is completed, bailing out without doing any configuration."
 	Add-Content -Path "$DebloatTag" -Value "Script run outside of OOBE - $(get-date) - $CurrProf - $UsrNm - Exiting"
 	Stop-Transcript
