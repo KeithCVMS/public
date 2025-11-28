@@ -40,6 +40,8 @@ Version 1.1:  Cleaned up output.
 Version 1.0:  Original published version.
 
 KH changes	added Log function
+added executionpolicy to begin blok
+
 #>
 
 <#
@@ -57,7 +59,11 @@ Param(
     [Parameter(Mandatory = $False)] [Int32] $RebootTimeout = 120,
     [Parameter(Mandatory = $False)] [switch] $ExcludeDrivers,
     [Parameter(Mandatory = $False)] [switch] $ExcludeUpdates
+	
 )
+Begin {
+	Set-ExecutionPolicy -ExecutionPolicy bypass -Scope Process
+}
 
 Process {
 
@@ -97,7 +103,7 @@ Process {
     # Start logging
     Start-Transcript "$($env:ProgramData)\CVMMPA\UpdateOS.log" -Append	#KH
 	write-host "*****************************************************"
-	write-host "***************UpdateOS.ps1**************************"
+	write-host "***************UpdateOS 2.1 KH.ps1**************************"
 	write-host ""
 	
 	#Set TimeZone
@@ -113,43 +119,42 @@ Process {
 
 	#Now install OS Updates
     # Opt into Microsoft Update
-#    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     Log "Opting into Microsoft Update"
     $ServiceManager = New-Object -ComObject "Microsoft.Update.ServiceManager"
     $ServiceID = "7971f918-a847-4430-9279-4a52d1efe18d"
     $ServiceManager.AddService2($ServiceId, 7, "") | Out-Null
 
     # Install all available updates
-    Log "Install OS Update"
     $WUDownloader = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateDownloader()
     $WUInstaller = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateInstaller()
     if ($ExcludeDrivers) {
         # Updates only
+		Log "Exclude Drivers"
         $queries = @("IsInstalled=0 and Type='Software'")
     }
     elseif ($ExcludeUpdates) {
         # Drivers only
+		Log "Exclude Software"
         $queries = @("IsInstalled=0 and Type='Driver'")
     } else {
         # Both
+		Log "Include Drivers and Updates"
         $queries = @("IsInstalled=0 and Type='Software'", "IsInstalled=0 and Type='Driver'")
     }
 
     $WUUpdates = New-Object -ComObject Microsoft.Update.UpdateColl
-    $queries | ForEach-Object {
-#        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
+	$queries | ForEach-Object {
         Log "Getting $_ updates."        
         try {
             ((New-Object -ComObject Microsoft.Update.Session).CreateupdateSearcher().Search($_)).Updates | ForEach-Object {
                 if (!$_.EulaAccepted) { $_.AcceptEula() }
                 $featureUpdate = $_.Categories | Where-Object { $_.CategoryID -eq "3689BDC8-B205-4AF4-8D4A-A63924C5E9D5" }
                 if ($featureUpdate) {
-#                    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                     Log "Skipping feature update: $($_.Title)"
                 } elseif ($_.Title -match "Preview") { 
-#                    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
                     Log "Skipping preview update: $($_.Title)"
                 } else {
+                    Log "Add update: $($_.Title)"
                     [void]$WUUpdates.Add($_)
                 }
             }
@@ -161,16 +166,18 @@ Process {
         }
     }
 
-#    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     if ($WUUpdates.Count -eq 0) {
         Log "No Updates Found"
         Exit 0
     } else {
         Log "Updates found: $($WUUpdates.count)"
+		$TotUpdates = $($WUUpdates.count)
     }
     
-    foreach ($update in $WUUpdates) {
-    
+    $CurrUpdate = 0
+	foreach ($update in $WUUpdates) {
+		$CurrUpdate = $CurrUpdate + 1
+		Log "Update $($CurrUpdate) of $($TotUpdates)"
         $singleUpdate = New-Object -ComObject Microsoft.Update.UpdateColl
         $singleUpdate.Add($update) | Out-Null
     
@@ -181,16 +188,12 @@ Process {
         $WUInstaller.Updates = $singleUpdate
         $WUInstaller.ForceQuiet = $true
     
-#        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Log "Downloading update: $($update.Title)"
         $Download = $WUDownloader.Download()
-        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Log "Download result: $($Download.ResultCode) ($($Download.HResult))"
     
-#        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Log "Installing update: $($update.Title)"
         $Results = $WUInstaller.Install()
-#        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         Log "Install result: $($Results.ResultCode) ($($Results.HResult))"
 
         # result code 2 = success, see https://learn.microsoft.com/en-us/windows/win32/api/wuapi/ne-wuapi-operationresultcode
@@ -201,11 +204,9 @@ Process {
     }
 
     # Specify return code
-#    $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
     if ($script:needReboot) {
         Log " Windows Update indicated that a reboot is needed."
 
-        $ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
         if ($Reboot -eq "Hard") {
             Log " Exiting with return code 1641 to indicate a hard reboot is needed."
             Stop-Transcript
@@ -226,10 +227,11 @@ Process {
         Log " Windows Update indicated that no reboot is required."
     }
 
-#Set TimeZone
+	#Set TimeZone
+	Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
 
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
-
-
+	Add-Content -Path "$($env:ProgramData)\CVMMPA\UpdateOS.tag" -Value "Finish Script $(get-date)"	#KH
+	Stop-Transcript
+	
     Exit 0
 }
