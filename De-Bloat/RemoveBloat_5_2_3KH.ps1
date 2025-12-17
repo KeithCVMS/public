@@ -189,13 +189,14 @@ N/A
 ############################################################################################################
 param (
     [string[]]$customwhitelist,
-    [string[]]$TasksToRemove  # Add this parameter for scheduled tasks to remove
+    [string[]]$TasksToRemove,  # Add this parameter for scheduled tasks to remove
+	[Parameter(Mandatory = $False)] [Switch] $Force = $false
 )
 
 ##Elevate if needed
 
 If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator')) {
-    write-output "You didn't run this script as an Administrator. This script will self elevate to run as an Administrator and continue."
+	write-output "You didn't run this script as an Administrator. This script will self elevate to run as an Administrator and continue."
     Start-Sleep 1
     write-output "                                               3"
     Start-Sleep 1
@@ -203,8 +204,15 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     Start-Sleep 1
     write-output "                                               1"
     Start-Sleep 1
-    #Start-Process powershell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File `"{0}`" -WhitelistApps {1}" -f $PSCommandPath, ($WhitelistApps -join ',')) -Verb RunAs
-    Start-Process powershell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File `"{0}`" -customwhitelist {1} -TasksToRemove {2}" -f $PSCommandPath, ($customwhitelist -join ','), ($TasksToRemove -join ',')) -Verb RunAs
+    $args = @(
+		'-NoProfile'
+		'-ExecutionPolicy', 'Bypass'
+		'-File', $PSCommandPath
+		'customwhitelist', ($customwhitelist -join ',')
+		'TasksToRemove', ($TasksToRemove -join ',')
+    )
+    if ($Force) { $args += '-Force' }
+    Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     Exit
 }
 #Custom CVM Code
@@ -212,6 +220,8 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/SetTimeZone.ps1" -UseBasicParsing).Content  
 #Enhanced Logging function
 invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/Log.ps1" -UseBasicParsing).Content  
+#OOBEComplete Function
+invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/Test-OOBEComplete.ps1" -UseBasicParsing).Content  
 
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
@@ -260,33 +270,13 @@ Log "Profile:  $CurrProf"
 write-host " "
 
 #Check that we are in OOBE or Exit
-$TypeDef = @"
- 
-using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
- 
-namespace Api
-{
- public class Kernel32
- {
-   [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-   public static extern int OOBEComplete(ref int bIsOOBEComplete);
- }
-}
-"@
- 
-Add-Type -TypeDefinition $TypeDef -Language CSharp
- 
-$IsOOBEComplete = $false
-$hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
+$oobe = Test-OOBEComplete
 
-if ($IsOOBEComplete -or ($IsOOBEComplete -eq '1')) {
-	Log "OOBE is completed, bailing out without doing any configuration."
-	Add-Content -Path "$DebloatTag" -Value "Script run outside of OOBE - $(get-date) - $CurrProf - $UsrNm - Exiting"
-	Stop-Transcript
-	exit 0
+if ($oobe.Success -and $oobe.IsOOBEComplete -and (-not $Force)) {
+    Log "OOBE is completed, bailing out without doing any configuration."
+    Add-Content -Path $DebloatTag -Value "Script run outside of OOBE - $(Get-Date) - $CurrProf - $UsrNm - Exiting"
+    Stop-Transcript
+    exit 0
 }
 
 If (Test-Path $DebloatTag) {
