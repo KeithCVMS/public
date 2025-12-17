@@ -207,21 +207,11 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     Start-Process powershell.exe -ArgumentList ("-NoProfile -ExecutionPolicy Bypass -File `"{0}`" -customwhitelist {1} -TasksToRemove {2}" -f $PSCommandPath, ($customwhitelist -join ','), ($TasksToRemove -join ',')) -Verb RunAs
     Exit
 }
-#Log function added KH
-Function Log() {
-	[CmdletBinding()]
-	param (
-		[Parameter(Mandatory=$false)] [String] $message
-	)
-
-	$tz = [Regex]::Replace([System.TimeZoneInfo]::Local.StandardName, '([A-Z])\w+\s*', '$1')
-	$ts = get-date -f "yyyy/MM/dd hh:mm:ss tt"
-	Write-Output "$ts $tz -  $message"
-}
-#Log function end
-
-#Set TimeZone
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/SetTimeZone.ps1" -OutFile .\SetTimeZone.ps1; .\SetTimeZone.ps1
+#Custom CVM Code
+#Set TimeZone in case it has been changed
+invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/SetTimeZone.ps1" -UseBasicParsing).Content  
+#Enhanced Logging function
+invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/Log.ps1" -UseBasicParsing).Content  
 
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
@@ -1656,12 +1646,11 @@ $details = Get-CimInstance -ClassName Win32_ComputerSystem
 $manufacturer = $details.Manufacturer
 
 if ($manufacturer -like "*ASUS*") {
-	#Asus seems to have a relatively short list of custom pieces based on an Expertbook(business) and Vivobook(consumer) laptops in my lab currently
+	#Asus seems to have a relatively short list of custom pieces based on Expertbook(business) and Vivobook(consumer) laptops in my lab currently
     Log "ASUS detected"
     write-output ""
 	#Remove ASUS bloat
 	##ASUS OEMcode = B9ECED6F
-	
 	
     ##ASUS Specific 
     ##You can decide which, if any, you wish to keep by including in customwhitelist
@@ -1701,13 +1690,8 @@ if ($manufacturer -like "*ASUS*") {
 
     }
 
-    ##Belt and braces, remove via CIM too
-    #foreach ($program in $UninstallPrograms) {
-    #    Get-CimInstance -Classname Win32_Product | Where-Object Name -Match $program | Invoke-CimMethod -MethodName UnInstall
-    #}
-
-	Log "Removing Asus Theme and background as necessary"
-	##Remove Asus theme and background image
+	Log "Removing Asus Theme and background "
+	##Remove Asus OEM theme and background image
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes"
 
 	# Check and remove ThemeName if it exists
@@ -1722,14 +1706,24 @@ if ($manufacturer -like "*ASUS*") {
 		Remove-ItemProperty -Path $registryPath -Name "DesktopBackground"
 	}
 
-	#Clear the pre-defined ASUS task bar definition file and registry key or it will override default user settings
-     if (Test-Path -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -PathType Leaf) {
+	#Clear the pre-defined ASUS OEM task bar definition file and registry key or it will override default user settings
+	$tbfile = "C:\Windows\OEM\TaskbarLayoutModification.xml"
+    if (Test-Path -Path $tbfile -PathType Leaf -and (Get-Item $tbfile).LastWriteTimeUTC -lt $startUtc) {
 		Log "remove asus taskbar"
-		Remove-Item -Path "C:\Windows\OEM\TaskbarLayoutModification.xml" -Force 
+		Remove-Item -Path $tbfile -Force 
 	}
-	if ((Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" -ErrorAction Stop).Property -eq "LayoutXMLPath") {
+	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
+	$reg = Get-ItemProperty -Path $registryPath -ErrorAction SilentlyContinue
+	if ($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath" -and $reg.LayoutXMLPath -ieq $tbfile) {
 		Log "remove Asus layoutxmlpath"
-		cmd /c reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer" /v "LayoutXMLPath" /f
+		Remove-ItemProperty -Path $registryPath -Name "LayoutXMLPath"
+	}
+
+	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
+	$reg = Get-ItemProperty -Path $registryPath -ErrorAction SilentlyContinue
+	if ($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath" -and $reg.LayoutXMLPath -ieq $tbfile) {
+		Log "remove Asus layoutxmlpath"
+		Remove-ItemProperty -Path $registryPath -Name "LayoutXMLPath" -ErrorAction SilentlyContinue
 	}
 
 } 
