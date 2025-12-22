@@ -1698,20 +1698,20 @@ if ($manufacturer -like "*ASUS*") {
 
 	#Clear the pre-defined ASUS OEM task bar definition file and registry key or it will override default user settings
 	$tbfile = "C:\Windows\OEM\TaskbarLayoutModification.xml"
-    if (Test-Path -Path $tbfile -PathType Leaf -and (Get-Item $tbfile).LastWriteTimeUTC -lt $startUtc) {
+    if ((Test-Path -Path $tbfile -PathType Leaf) -and ((Get-Item $tbfile).LastWriteTimeUTC -lt $startUtc)) {
 		Log "remove asus taskbar"
 		Remove-Item -Path $tbfile -Force 
 	}
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
 	$reg = Get-ItemProperty -Path $registryPath -ErrorAction SilentlyContinue
-	if ($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath" -and $reg.LayoutXMLPath -ieq $tbfile) {
+	if (($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath") -and ($reg.LayoutXMLPath -ieq $tbfile)) {
 		Log "remove Asus layoutxmlpath"
 		Remove-ItemProperty -Path $registryPath -Name "LayoutXMLPath"
 	}
 
 	$registryPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer"
 	$reg = Get-ItemProperty -Path $registryPath -ErrorAction SilentlyContinue
-	if ($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath" -and $reg.LayoutXMLPath -ieq $tbfile) {
+	if (($reg -and $reg.PSObject.Properties.Name -contains "LayoutXMLPath") -and ($reg.LayoutXMLPath -ieq $tbfile)) {
 		Log "remove Asus layoutxmlpath"
 		Remove-ItemProperty -Path $registryPath -Name "LayoutXMLPath" -ErrorAction SilentlyContinue
 	}
