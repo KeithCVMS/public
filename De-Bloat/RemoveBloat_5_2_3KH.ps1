@@ -222,47 +222,35 @@ invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Kei
 invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/Log.ps1" -UseBasicParsing).Content  
 #OOBEComplete Function
 invoke-expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/KeithCVMS/CVMS/main/scripts/Test-OOBEComplete.ps1" -UseBasicParsing).Content  
+$CVMAppName = "Debloat"
 
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
-$ErrorActionPreference = 'silentlycontinue'
+$ErrorActionPreference = 'SilentlyContinue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
 
-
-#Create Folder
 #Check root first
-$DebloatLogFldr = "C:\ProgramData\CVMMPA"
-If (Test-Path $DebloatLogFldr) {
-    Write-Output "$DebloatLogFldr exists. Skipping."
-}
-Else {
-    Write-Output "The folder '$DebloatLogFldr' doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
-    Start-Sleep 1
-    New-Item -Path "$DebloatLogFldr" -ItemType Directory
-    Write-Output "The folder $DebloatLogFldr was successfully created."
-}
+$RootFldr = "$($env:ProgramData)\CVMMPA"
+$DebloatLogFldr = "$RootFolder"
+New-Item -ItemType Directory -Path $DebloatLogFldr -Force | Out-Null
 
 $DebloatLog = "$DebloatLogFldr\Debloat.log"
 Start-Transcript -Path "$DebloatLog"
-write-host "***********************************************************"
-Log        "*****************VERSION 5_2_3KH**************************"
-write-host "***********************************************************"
+Log "***********************************************************"
+Log "***            VERSION 5_2_3KH   **************************"
+Log "***********************************************************"
+Log ""
 
 #Check app folder to create
-$DebloatFolder = "C:\ProgramData\CVMMPA\Debloat"
-If (!(Test-Path $DebloatFolder)) {
-    Start-Sleep 1
-    New-Item -Path "$DebloatFolder" -ItemType Directory
-    Log "The folder $DebloatFolder was successfully created."
-}
+$DebloatFolder = "$RootFldr\Debloat"
+New-Item -ItemType Directory -Path $DebloatFolder -Force | Out-Null
 
 $DebloatTag = "$DebloatLogFldr\Debloat.tag"
 Log "Set up Tag file $DebloatTag"
 
-#$Env:UserName
 $UsrNm = $Env:UserName
 $CurrProf = $Env:Userprofile
 Log "Username: $UsrNm"
