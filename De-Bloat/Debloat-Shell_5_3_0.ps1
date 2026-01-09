@@ -41,7 +41,7 @@ If (!(Test-Path $DebloatFolder)) {
 
 Start-Transcript -Path "$CommonFolder\Debloat-Shell.log" -Append
 Log "##############################################################"
-Log "######### 				Debloat-Shell-2-3.ps1						#############"
+Log "######### 				Debloat-Shell_5_3_0.ps1						#############"
 Log "##############################################################"
 Log ""
 
@@ -74,7 +74,7 @@ $templateFilePath = "$DebloatFolder\RemoveBloat.ps1"
 ####-Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/RemoveBloat.ps1" `
 
 Invoke-WebRequest `
--Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/RemoveBloat-5-3-0KH.ps1" `
+-Uri "https://raw.githubusercontent.com/KeithCVMS/public/main/De-Bloat/RemoveBloat_5_3_0KH.ps1" `
 -OutFile $templateFilePath `
 -UseBasicParsing `
 -Headers @{"Cache-Control"="no-cache"}
