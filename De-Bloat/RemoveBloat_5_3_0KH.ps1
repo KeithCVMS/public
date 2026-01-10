@@ -217,8 +217,8 @@ If (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 		'-File', $PSCommandPath
 		'customwhitelist', ($customwhitelist -join ',')
 		'TasksToRemove', ($TasksToRemove -join ',')
-    )
-    if ($Force) { $args += '-Force' }
+    	'custombloatlist', ($custombloatlist -join ','))
+    if ($Force) { $args += ' -Force' }
     Start-Process powershell.exe -Verb RunAs -ArgumentList $args
     Exit
 }
