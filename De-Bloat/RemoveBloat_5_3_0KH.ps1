@@ -195,7 +195,7 @@ param (
     [string[]]$customwhitelist,
     [string[]]$TasksToRemove,  # Add this parameter for scheduled tasks to remove
     [string[]]$custombloatlist,
-		[Parameter(Mandatory = $False)] [Switch] $Force = $false	#KH added to Force running
+		[Parameter(Mandatory = $False)] [Switch] $Force	#KH added to Force running
 )
 
 ##Elevate if needed
