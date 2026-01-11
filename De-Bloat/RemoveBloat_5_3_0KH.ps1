@@ -1889,13 +1889,13 @@ if ($manufacturer -like "*HP*") {
             Log "$app not found."
         }
 
-        if (Get-Package -allusers -Name $app -ErrorAction SilentlyContinue) {
-            Get-Package -allusers -Name $app | Uninstall-Package -AllUsers
-            Log "Removed $app."
-        }
-        else {
-            Log "$app not found."
-        }
+        # if (Get-Package -allusers -Name $app -ErrorAction SilentlyContinue) {
+            # Get-Package -allusers -Name $app | Uninstall-Package -AllUsers
+            # Log "Removed $app."
+        # }
+        # else {
+            # Log "$app not found."
+        # }
 
         UninstallAppFull -appName $app
 
