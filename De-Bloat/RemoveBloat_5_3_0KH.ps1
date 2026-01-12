@@ -241,17 +241,16 @@ $ProgressPreference = 'SilentlyContinue'
 
 #Check root first
 $RootFldr = "$($env:ProgramData)\CVMMPA"
-$DebloatLogFldr = "$RootFolder"
-New-Item -ItemType Directory -Path $DebloatLogFldr -Force | Out-Null
+New-Item -ItemType Directory -Path $RootFldr -Force | Out-Null
 
-$DebloatLog = "$DebloatLogFldr\Debloat.log"
-Start-Transcript -Path "$DebloatLog"
+$DebloatLog = "$RootFldr\Debloat.log"
+Start-Transcript -Path "$DebloatLog" -Append
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
 Log "customwhitelist: $customwhitelist"
-Log "TaskstoRemove: $TasksToRemove"	
-Log "customblstlist: $custombloatlist"
-Log "Force: $Force"
+Log "TaskstoRemove:   $TasksToRemove"	
+Log "customblstlist:  $custombloatlist"
+Log "Force: 				  $Force"
 Log "***********************************************************"
 Log ""
 
@@ -260,7 +259,7 @@ Log ""
 $DebloatFolder = "$RootFldr\Debloat"
 New-Item -ItemType Directory -Path $DebloatFolder -Force | Out-Null
 
-$DebloatTag = "$DebloatLogFldr\Debloat.tag"
+$DebloatTag = "$RootFldr\Debloat.tag"
 Log "Set up Tag file $DebloatTag"
 
 $UsrNm = $Env:UserName
@@ -361,7 +360,7 @@ $WhitelistedApps = @(
     'CanonicalGroupLimited.UbuntuonWindows',
     'Microsoft.MicrosoftStickyNotes',
     'Microsoft.MSPaint',
-#    'Microsoft.WindowsCamera',			##kh turned on in bloatware
+    'Microsoft.WindowsCamera',
     '.NET Framework',
     'Microsoft.HEIFImageExtension',
     'Microsoft.StorePurchaseApp',
@@ -382,9 +381,9 @@ $WhitelistedApps = @(
     'Dell Display Manager 2.1',
     'Dell Display Manager 2.2',
     'Dell Peripheral Manager',
-#    'MSTeams',							##kh turned on in bloatware
+#    'MSTeams',													##kh turned on in bloatware
     'Microsoft.Paint',
-#    'Microsoft.OutlookForWindows',		##kh moved to bloatware
+#    'Microsoft.OutlookForWindows',			##kh moved to bloatware
     'Microsoft.WindowsTerminal',
 #    'Microsoft.MicrosoftEdge.Stable',	##kh already in bloatware
     'Microsoft.MPEG2VideoExtension',
@@ -574,7 +573,7 @@ $Bloatware = @(
     #"Microsoft.Office.Todo.List"
 	  "Microsoft.OutlookForWindows"																		##kh moved from whitelist
     "Microsoft.Whiteboard"																					##kh activated
-    "Microsoft.WindowsCamera"																				##kh moved from whitelist
+    #"Microsoft.WindowsCamera"
     "Microsoft.WindowsSoundRecorder"																##kh activated
     "Microsoft.YourPhone"																						##kh activated
     "Microsoft.Todos"																								##kh activated
@@ -591,14 +590,19 @@ if ($custombloatlist) {
         $Bloatware += $bloatyapp
     }
 }
-
+Log ""
 Log "Removing Bloat AppX provisioned"
+Log "AppsToIgnore:$appstoignore"
+Log ""
+Log "Bloatware: $Bloatware"
+Log ""
 
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
     $packagename = $appxprov.PackageName
     $displayname = $appxprov.DisplayName
-    Log "Removing $displayname AppX Provisioning Package"
+    Log ""
+		Log "Removing $displayname AppX Provisioning Package"
     try {
         Remove-AppxProvisionedPackage -PackageName $packagename -Online -ErrorAction SilentlyContinue | Out-Null
         Log "Removed $displayname AppX Provisioning Package"
@@ -615,7 +619,8 @@ $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatwa
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
     $displayname = $appxapp.Name
-    Log "$displayname AppX Package exists"
+    Log ""
+		Log "$displayname AppX Package exists"
     Log "Removing $displayname AppX Package"
     try {
         Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
@@ -1742,7 +1747,7 @@ $manufacturer = $details.Manufacturer
 if ($manufacturer -like "*ASUS*") {
 	#Asus seems to have a relatively short list of custom pieces based on Expertbook(business) and Vivobook(consumer) laptops in my lab currently
     Log "ASUS detected"
-    write-output ""
+    Log ""
 	#Remove ASUS bloat
 	##ASUS OEMcode = B9ECED6F
 	
