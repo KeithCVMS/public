@@ -3239,3 +3239,4 @@ Log "Total Script $($runTimeFormatted)"
 #Set ProgressPreerence back
 $ProgressPreference = $OrginalProgressPreference
 Stop-Transcript
+exit 0
