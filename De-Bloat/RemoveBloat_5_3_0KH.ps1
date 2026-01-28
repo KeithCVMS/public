@@ -597,6 +597,9 @@ Log ""
 Log "Bloatware: $Bloatware"
 Log ""
 
+Log "provisioned:"
+Get-AppxProvisionedPackage -Online | select displayname, packagename
+Log ""
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
     $packagename = $appxprov.PackageName
@@ -615,6 +618,9 @@ foreach ($appxprov in $provisioned) {
 
 Log "Removing Bloat AppX"
 
+Log "Appx:"
+Get-AppxPackage -AllUsers | select name, packagefullname
+Log ""
 $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
