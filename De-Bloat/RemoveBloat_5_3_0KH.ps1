@@ -234,7 +234,7 @@ $CVMAppName = "Debloat"
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
-$ErrorActionPreference = 'silentlycontinue'
+$ErrorActionPreference = 'continue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
