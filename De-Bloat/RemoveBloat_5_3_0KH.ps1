@@ -248,8 +248,11 @@ Start-Transcript -Path "$DebloatLog" -Append
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
 Log "customwhitelist: $customwhitelist"
+Log ""
 Log "TaskstoRemove:   $TasksToRemove"	
+Log ""
 Log "customblstlist:  $custombloatlist"
+Log ""
 Log "Force: 				  $Force"
 Log "***********************************************************"
 Log ""
@@ -342,7 +345,9 @@ function Remove-CustomScheduledTasks {
     }
 }
 
-
+Log ""
+Log "##########STARTING WORK#############"
+Log ""
 ############################################################################################################
 #                                        Remove AppX Packages                                              #
 #                                                                                                          #
@@ -591,14 +596,23 @@ if ($custombloatlist) {
     }
 }
 Log ""
-Log "Removing Bloat AppX provisioned"
-Log "AppsToIgnore:$appstoignore"
+Log #################Lists set##########"
+Log ""
+Log "AppsToIgnore: $appstoignore"
 Log ""
 Log "Bloatware: $Bloatware"
 Log ""
+Log "Removing Bloat AppX provisioned"
 
-Log "provisioned:"
+
+Log "#################provisioned appx:"
 Get-AppxProvisionedPackage -Online | select displayname, packagename
+Log "
+Log "#################provisioned appx in bloat:"
+Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | select displayname, packagename
+Log "
+Log "#################provisioned appx in bloat not ignore:"
+Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} | select displayname, packagename
 Log ""
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -616,17 +630,24 @@ foreach ($appxprov in $provisioned) {
 
 }
 
+Log ""
 Log "Removing Bloat AppX"
 
 Log "Appx:"
 Get-AppxPackage -AllUsers | select name, packagefullname
+Log "
+Log "#################appx in bloat:"
+Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | select name, packagefullname
+Log "
+Log "#################provisioned appx in bloat not ignore:"
+Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | select name, packagefullname
 Log ""
 $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
     $displayname = $appxapp.Name
     Log ""
-		Log "$displayname AppX Package exists"
+	#Log "$displayname AppX Package exists"
     Log "Removing $displayname AppX Package"
     try {
         Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
