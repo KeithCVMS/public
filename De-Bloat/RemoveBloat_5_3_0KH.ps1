@@ -610,13 +610,13 @@ Log "Removing Bloat AppX provisioned"
 
 
 Log "#################provisioned appx:"
-Get-AppxProvisionedPackage -Online | select displayname, packagename
+Get-AppxProvisionedPackage -Online | select displayname, packagename |write-output
 Log ""
 Log "#################provisioned appx in bloat:"
-Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | select displayname, packagename
+Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | select displayname, packagename|write-output
 Log ""
 Log "#################provisioned appx in bloat not ignore:"
-Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} | select displayname, packagename
+Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} | select displayname, packagename|write-output
 Log ""
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -638,13 +638,13 @@ Log ""
 Log "Removing Bloat AppX"
 
 Log "Appx:"
-Get-AppxPackage -AllUsers | select name, packagefullname
+Get-AppxPackage -AllUsers | select name, packagefullname |write-output
 Log ""
 Log "#################appx in bloat:"
-Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | select name, packagefullname
+Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | select name, packagefullname | write-output
 Log ""
 Log "#################provisioned appx in bloat not ignore:"
-Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | select name, packagefullname
+Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | select name, packagefullname | write-output
 Log ""
 $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
