@@ -613,31 +613,22 @@ Log "#################provisioned appx:"
 Get-AppxProvisionedPackage -Online |
 Select-Object DisplayName, PackageName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 Log "#################provisioned appx in bloat:"
 Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | 
 Select-Object DisplayName, PackageName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 Log "#################provisioned appx in bloat not ignore:"
 Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} |
 Select-Object DisplayName, PackageName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -661,29 +652,20 @@ Log "Removing Bloat AppX"
 Log "Appx:"
 Get-AppxPackage -AllUsers | Select-Object Name, PackageFullName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 Log "#################appx in bloat:"
 Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | Select-Object Name, PackageFullName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 Log "#################provisioned appx in bloat not ignore:"
 Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | Select-Object Name, PackageFullName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Log ""
 $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
@@ -3306,19 +3288,13 @@ else {
 Get-AppxPackage -AllUsers | 
 Select-Object Name, PackageFullName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 Get-AppxProvisionedPackage -Online | 
 Select-Object DisplayName, PackageName |
     Format-Table -AutoSize |
-    Out-String -Width 4096 |
-    ForEach-Object {
-        # Split into individual lines and send each to Log
-        $_ -split "(`r`n|`n)" | ForEach-Object { Log $_ }
-    }
+    Out-String -Width 4096 -Stream |
+    ForEach-Object { Log $_ }
 
 
 Log "Completed"
