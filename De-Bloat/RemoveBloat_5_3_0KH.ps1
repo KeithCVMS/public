@@ -247,11 +247,13 @@ $DebloatLog = "$RootFldr\Debloat.log"
 Start-Transcript -Path "$DebloatLog" -Append
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
-Log "customwhitelist: $customwhitelist"
+Log "customwhitelist: "
+$customwhitelist
 Log ""
 Log "TaskstoRemove:   $TasksToRemove"	
 Log ""
-Log "customblstlist:  $custombloatlist"
+Log "custombloatlist:"
+$custombloatlist
 Log ""
 Log "Force: 				  $Force"
 Log "***********************************************************"
@@ -363,7 +365,7 @@ $WhitelistedApps = @(
     'Microsoft.WindowsStore',
     'Microsoft.Windows.Photos',
     'CanonicalGroupLimited.UbuntuonWindows',
-    'Microsoft.MicrosoftStickyNotes',
+    #'Microsoft.MicrosoftStickyNotes', 		#KH present in custombloat
     'Microsoft.MSPaint',
     'Microsoft.WindowsCamera',
     '.NET Framework',
@@ -596,21 +598,23 @@ if ($custombloatlist) {
     }
 }
 Log ""
-Log #################Lists set##########"
+Log "#################Lists set##########"
 Log ""
-Log "AppsToIgnore: $appstoignore"
+Log "AppsToIgnore: "
+$appstoignore
 Log ""
-Log "Bloatware: $Bloatware"
+Log "Bloatware:"
+$Bloatware
 Log ""
 Log "Removing Bloat AppX provisioned"
 
 
 Log "#################provisioned appx:"
 Get-AppxProvisionedPackage -Online | select displayname, packagename
-Log "
+Log ""
 Log "#################provisioned appx in bloat:"
 Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | select displayname, packagename
-Log "
+Log ""
 Log "#################provisioned appx in bloat not ignore:"
 Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} | select displayname, packagename
 Log ""
@@ -635,10 +639,10 @@ Log "Removing Bloat AppX"
 
 Log "Appx:"
 Get-AppxPackage -AllUsers | select name, packagefullname
-Log "
+Log ""
 Log "#################appx in bloat:"
 Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | select name, packagefullname
-Log "
+Log ""
 Log "#################provisioned appx in bloat not ignore:"
 Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | select name, packagefullname
 Log ""
@@ -650,7 +654,7 @@ foreach ($appxapp in $appxinstalled) {
 	#Log "$displayname AppX Package exists"
     Log "Removing $displayname AppX Package"
     try {
-        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue
+        Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue | Out-Null
         Log "Removed $displayname AppX Package"
     }
     catch {
@@ -3259,6 +3263,9 @@ if ($runTime.TotalHours -ge 1) {
 else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
+
+Get-AppxPackage -AllUsers | select name, packagefullname
+Get-AppxProvisionedPackage -Online | select displayname, packagename
 
 Log "Completed"
 Log "Total Script $($runTimeFormatted)"
