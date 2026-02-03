@@ -234,7 +234,7 @@ $CVMAppName = "Debloat"
 #Get the Current start time in UTC format, so that Time Zone Changes don't affect total runtime calculation
 $startUtc = [datetime]::UtcNow
 #no errors throughout
-$ErrorActionPreference = 'continue'
+$ErrorActionPreference = 'silentlycontinue'
 #no progressbars to slow down powershell transfers
 $OrginalProgressPreference = $ProgressPreference
 $ProgressPreference = 'SilentlyContinue'
@@ -245,6 +245,7 @@ New-Item -ItemType Directory -Path $RootFldr -Force | Out-Null
 
 $DebloatLog = "$RootFldr\Debloat.log"
 Start-Transcript -Path "$DebloatLog" -Append
+
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
 Log "customwhitelist: "
@@ -607,29 +608,34 @@ Log "Bloatware:"
 $Bloatware
 Log ""
 Log "Removing Bloat AppX provisioned"
+Log ""
+<# 
+#For debugging
+			Log "#################provisioned appx:"
+			Get-AppxProvisionedPackage -Online |
+			Select-Object DisplayName, PackageName |
+					Format-Table -AutoSize |
+					Out-String -Width 4096 -Stream |
+					ForEach-Object { Log $_ }
+			Log ""
+			Log "#################provisioned appx in bloat:"
+			Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | 
+			Select-Object DisplayName, PackageName |
+					Format-Table -AutoSize |
+					Out-String -Width 4096 -Stream |
+					ForEach-Object { Log $_ }
+			Log ""
+			Log "#################provisioned appx in bloat not ignore:"
+			Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} |
+			Select-Object DisplayName, PackageName |
+					Format-Table -AutoSize |
+					Out-String -Width 4096 -Stream |
+					ForEach-Object { Log $_ }
+			Log ""
+#End debugging
 
+ #>																				
 
-Log "#################provisioned appx:"
-Get-AppxProvisionedPackage -Online |
-Select-Object DisplayName, PackageName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
-Log "#################provisioned appx in bloat:"
-Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | 
-Select-Object DisplayName, PackageName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
-Log "#################provisioned appx in bloat not ignore:"
-Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} |
-Select-Object DisplayName, PackageName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
     $packagename = $appxprov.PackageName
@@ -648,31 +654,37 @@ foreach ($appxprov in $provisioned) {
 
 Log ""
 Log "Removing Bloat AppX"
+Log ""
 
-Log "Appx:"
-Get-AppxPackage -AllUsers | Select-Object Name, PackageFullName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
-Log "#################appx in bloat:"
-Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | Select-Object Name, PackageFullName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
-Log "#################provisioned appx in bloat not ignore:"
-Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | Select-Object Name, PackageFullName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Log ""
-$appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
+<# 
+#For debugging
+					Log "Appx:"
+					Get-AppxPackage -AllUsers | Select-Object Name, PackageFullName |
+							Format-Table -AutoSize |
+							Out-String -Width 4096 -Stream |
+							ForEach-Object { Log $_ }
+					Log ""
+					Log "#################appx in bloat:"
+					Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | Select-Object Name, PackageFullName |
+							Format-Table -AutoSize |
+							Out-String -Width 4096 -Stream |
+							ForEach-Object { Log $_ }
+					Log ""
+					Log "#################provisioned appx in bloat not ignore:"
+					Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | Select-Object Name, PackageFullName |
+							Format-Table -AutoSize |
+							Out-String -Width 4096 -Stream |
+							ForEach-Object { Log $_ }
+					Log ""
+#End debugging
+
+ #>
+ $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
     $displayname = $appxapp.Name
     Log ""
-	#Log "$displayname AppX Package exists"
+#		Log "$displayname AppX Package exists"
     Log "Removing $displayname AppX Package"
     try {
         Remove-AppxPackage -Package $packagename -AllUsers -ErrorAction SilentlyContinue | Out-Null
@@ -685,7 +697,7 @@ foreach ($appxapp in $appxinstalled) {
 
 
 }
-
+Log ""
 
 ############################################################################################################
 #                                        Remove Registry Keys                                              #
@@ -3285,18 +3297,21 @@ else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
 
-Get-AppxPackage -AllUsers | 
-Select-Object Name, PackageFullName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
-Get-AppxProvisionedPackage -Online | 
-Select-Object DisplayName, PackageName |
-    Format-Table -AutoSize |
-    Out-String -Width 4096 -Stream |
-    ForEach-Object { Log $_ }
+<# 
+# For debugging
+	Get-AppxPackage -AllUsers | 
+				Select-Object Name, PackageFullName |
+						Format-Table -AutoSize |
+						Out-String -Width 4096 -Stream |
+						ForEach-Object { Log $_ }
+				Get-AppxProvisionedPackage -Online | 
+				Select-Object DisplayName, PackageName |
+						Format-Table -AutoSize |
+						Out-String -Width 4096 -Stream |
+						ForEach-Object { Log $_ }
+#End debugging
 
-
+ #>
 Log "Completed"
 Log "Total Script $($runTimeFormatted)"
 
