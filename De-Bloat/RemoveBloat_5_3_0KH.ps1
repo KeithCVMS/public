@@ -248,13 +248,11 @@ Start-Transcript -Path "$DebloatLog" -Append
 
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
-Log "customwhitelist: "
-$customwhitelist
+Log "customwhitelist: "$customwhitelist
 Log ""
 Log "TaskstoRemove:   $TasksToRemove"	
 Log ""
-Log "custombloatlist:"
-$custombloatlist
+Log "custombloatlist:"$custombloatlist
 Log ""
 Log "Force: 				  $Force"
 Log "***********************************************************"
@@ -599,42 +597,8 @@ if ($custombloatlist) {
     }
 }
 Log ""
-Log "#################Lists set##########"
-Log ""
-Log "AppsToIgnore: "
-$appstoignore
-Log ""
-Log "Bloatware:"
-$Bloatware
-Log ""
 Log "Removing Bloat AppX provisioned"
 Log ""
-<# 
-#For debugging
-			Log "#################provisioned appx:"
-			Get-AppxProvisionedPackage -Online |
-			Select-Object DisplayName, PackageName |
-					Format-Table -AutoSize |
-					Out-String -Width 4096 -Stream |
-					ForEach-Object { Log $_ }
-			Log ""
-			Log "#################provisioned appx in bloat:"
-			Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware} | 
-			Select-Object DisplayName, PackageName |
-					Format-Table -AutoSize |
-					Out-String -Width 4096 -Stream |
-					ForEach-Object { Log $_ }
-			Log ""
-			Log "#################provisioned appx in bloat not ignore:"
-			Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore} |
-			Select-Object DisplayName, PackageName |
-					Format-Table -AutoSize |
-					Out-String -Width 4096 -Stream |
-					ForEach-Object { Log $_ }
-			Log ""
-#End debugging
-
- #>																				
 
 $provisioned = Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -in $Bloatware -and $_.DisplayName -notin $appstoignore -and $_.DisplayName -notlike 'MicrosoftWindows.Voice*' -and $_.DisplayName -notlike 'Microsoft.LanguageExperiencePack*' -and $_.DisplayName -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxprov in $provisioned) {
@@ -656,30 +620,7 @@ Log ""
 Log "Removing Bloat AppX"
 Log ""
 
-<# 
-#For debugging
-					Log "Appx:"
-					Get-AppxPackage -AllUsers | Select-Object Name, PackageFullName |
-							Format-Table -AutoSize |
-							Out-String -Width 4096 -Stream |
-							ForEach-Object { Log $_ }
-					Log ""
-					Log "#################appx in bloat:"
-					Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware} | Select-Object Name, PackageFullName |
-							Format-Table -AutoSize |
-							Out-String -Width 4096 -Stream |
-							ForEach-Object { Log $_ }
-					Log ""
-					Log "#################provisioned appx in bloat not ignore:"
-					Get-AppxPackage -AllUser | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore} | Select-Object Name, PackageFullName |
-							Format-Table -AutoSize |
-							Out-String -Width 4096 -Stream |
-							ForEach-Object { Log $_ }
-					Log ""
-#End debugging
-
- #>
- $appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
+$appxinstalled = Get-AppxPackage -AllUsers | Where-Object { $_.Name -in $Bloatware -and $_.Name -notin $appstoignore -and $_.Name -notlike 'MicrosoftWindows.Voice*' -and $_.Name -notlike 'Microsoft.LanguageExperiencePack*' -and $_.Name -notlike 'MicrosoftWindows.Speech*' }
 foreach ($appxapp in $appxinstalled) {
     $packagename = $appxapp.PackageFullName
     $displayname = $appxapp.Name
@@ -3297,21 +3238,6 @@ else {
     $runTimeFormatted = 'Duration: {0:mm} min {0:ss} sec' -f $runTime
 }
 
-<# 
-# For debugging
-	Get-AppxPackage -AllUsers | 
-				Select-Object Name, PackageFullName |
-						Format-Table -AutoSize |
-						Out-String -Width 4096 -Stream |
-						ForEach-Object { Log $_ }
-				Get-AppxProvisionedPackage -Online | 
-				Select-Object DisplayName, PackageName |
-						Format-Table -AutoSize |
-						Out-String -Width 4096 -Stream |
-						ForEach-Object { Log $_ }
-#End debugging
-
- #>
 Log "Completed"
 Log "Total Script $($runTimeFormatted)"
 
