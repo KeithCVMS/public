@@ -248,11 +248,11 @@ Start-Transcript -Path "$DebloatLog" -Append
 
 Log "***********************************************************"
 Log "***            VERSION 5_2_3KH   **************************"
-Log "customwhitelist: "$customwhitelist
+Log "customwhitelist: $customwhitelist"
 Log ""
 Log "TaskstoRemove:   $TasksToRemove"	
 Log ""
-Log "custombloatlist:"$custombloatlist
+Log "custombloatlist: $custombloatlist"
 Log ""
 Log "Force: 				  $Force"
 Log "***********************************************************"
