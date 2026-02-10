@@ -247,7 +247,7 @@ $DebloatLog = "$RootFldr\Debloat.log"
 Start-Transcript -Path "$DebloatLog" -Append
 
 Log "***********************************************************"
-Log "***            VERSION 5_2_3KH   **************************"
+Log "***            VERSION 5_3_0KH   **************************"
 Log "customwhitelist: $customwhitelist"
 Log ""
 Log "TaskstoRemove:   $TasksToRemove"	
@@ -255,6 +255,15 @@ Log ""
 Log "custombloatlist: $custombloatlist"
 Log ""
 Log "Force: 				  $Force"
+Log ""
+if ($CurrProf -like "*systemprofile*") {
+	Log "AutoPilot PreProvisioning run"
+}
+Log ""
+$UsrNm = $Env:UserName
+$CurrProf = $Env:Userprofile
+Log "Username: $UsrNm     Profile:  $CurrProf"
+Log ""
 Log "***********************************************************"
 Log ""
 
@@ -265,12 +274,6 @@ New-Item -ItemType Directory -Path $DebloatFolder -Force | Out-Null
 
 $DebloatTag = "$RootFldr\Debloat.tag"
 Log "Set up Tag file $DebloatTag"
-
-$UsrNm = $Env:UserName
-$CurrProf = $Env:Userprofile
-Log "Username: $UsrNm"
-Log "Profile:  $CurrProf"
-Log ""
 
 #Check that we are in OOBE or Exit
 $oobe = Test-OOBEComplete
@@ -284,7 +287,7 @@ if ($oobe.Success -and $oobe.IsOOBEComplete -and (-not $Force)) {
 
 If (Test-Path $DebloatTag) {
 	if ($CurrProf -like "*systemprofile*") {
-		# This prevents the script from running mutiple times during pre-provisioning
+		# This prevents the script from running mutiple times during OOBE
 		# but still allows it run to multiple times if being run in a user Context
 		# multiple attempts are recorded in the tag file
 		Log "Script has already been run for provisioning. Exiting"
@@ -300,11 +303,6 @@ Else {
 	Set-Content -Path "$DebloatTag" -Value "Start Script $(get-date) - $CurrProf - $UsrNm"
 }
 
-#KH write out msg for pre-provisioning run"
-
-if ($CurrProf -like "*systemprofile*") {
-	Log "AutoPilot PreProvisioning run"
-}
 
 #KH Define PS-Drives for non-default registry paths if not present on system
 if (!(Test-Path HKCR:)) {
@@ -522,7 +520,7 @@ $Bloatware = @(
     "Microsoft.GamingApp"
     "Microsoft.Messaging"
     "Microsoft.Microsoft3DViewer"
-    "Microsoft.MicrosoftEdge.Stable"										##kh no longer included in whitelist
+    "Microsoft.MicrosoftEdge.Stable"										##kh commented in whitelist
     "Microsoft.MicrosoftJournal"
     "Microsoft.MicrosoftOfficeHub"
     "Microsoft.MicrosoftSolitaireCollection"
@@ -577,13 +575,13 @@ $Bloatware = @(
     #"*Microsoft.Windows.Photos*"																		##kh wildcards wont work
     #"*Microsoft.WindowsCalculator*"																##kh wildcards wont work
     #"Microsoft.Office.Todo.List"
-	  "Microsoft.OutlookForWindows"																		##kh moved from whitelist
+	  "Microsoft.OutlookForWindows"																		##kh comemnted from whitelist
     "Microsoft.Whiteboard"																					##kh activated
     #"Microsoft.WindowsCamera"
     "Microsoft.WindowsSoundRecorder"																##kh activated
     "Microsoft.YourPhone"																						##kh activated
     "Microsoft.Todos"																								##kh activated
-    "MSTeams"																												##kh moved from whitelist
+    "MSTeams"																												##kh commented from whitelist
     #"Microsoft.PowerAutomateDesktop"
     #"MicrosoftWindows.Client.WebExperience"
 )
@@ -1381,7 +1379,7 @@ if ($version -like "*Windows 11*") {
 
     $blankjson | Out-File "C:\Users\Default\AppData\Local\Microsoft\Windows\Shell\LayoutModification.xml" -Encoding utf8 -Force
     $intunepath = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps"
-    #KH try-catch aqdded for logging
+    #KH try-catch added for logging
 	try {
     $intunecomplete = @(Get-ChildItem $intunepath).count
 		Log "$intunecomplete Win32Apps found"
@@ -1398,7 +1396,7 @@ if ($version -like "*Windows 11*") {
 
 		##KHADD S
 		Log "User1:$user.PSChildName"
-		#first condition changed to use profileimageath as the default use ins not alwasy default e.g. default0 on some systems
+		#first condition changed to use profileimagepath as the default user is not always default e.g. default0 on some systems
 		#        if ($user.PSChildName -ne '.DEFAULT' -and $user.PSChildName -ne 'S-1-5-18' -and $user.PSChildName -ne 'S-1-5-19' -and $user.PSChildName -ne 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
 		if ($user.ProfileImagePath -notlike '*DEFAULT*' -and $user.PSChildName -notin '.DEFAULT', 'S-1-5-18', 'S-1-5-19', 'S-1-5-20' -and $user.PSChildName -notmatch 'S-1-5-21-\d+-\d+-\d+-500') {
 		##KHADD E
@@ -1759,14 +1757,14 @@ if ($manufacturer -like "*ASUS*") {
     ##ASUS Specific 
     ##You can decide which, if any, you wish to keep by including in customwhitelist
 	$UninstallPrograms = @(
-		"B9ECED6F.ASUSExpertWidget"						#defines F1-F4 hotkeys on Expertbook
-		"B9ECED6F.ASUSPCAssistant"						#MyAsus App on Expertbook, Vivobook
-		"AppUp.IntelGraphicsExperience"					#Intel Graphic mgmt utility	on Expertbook, Vivobook
-		"AppUp.IntelManagementandSecurityStatus"		#Intel Security mgmt utility on Expertbook
-		"DolbyLaboratories.DolbyAccess"					#Dolby sound utilities on Expertbook, vivobook
-		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM"	#Dolby sound utilities on Expertbook, vivobook	
-		"DrivewintechTechnologyCo.DiracAudoManager"		#sound mgmt utility in Vivobook
-		"IntelligoTechnologyInc.541271065CCE8"			#suite of voice/microphone AI and Meeting utilities that Asus packages in Expertbook
+		"B9ECED6F.ASUSExpertWidget"											#defines F1-F4 hotkeys on Expertbook
+		"B9ECED6F.ASUSPCAssistant"											#MyAsus App on Expertbook, Vivobook
+		"AppUp.IntelGraphicsExperience"									#Intel Graphic mgmt utility	on Expertbook, Vivobook
+		"AppUp.IntelManagementandSecurityStatus"				#Intel Security mgmt utility on Expertbook
+		"DolbyLaboratories.DolbyAccess"									#Dolby sound utilities on Expertbook, Vivobook
+		"DolbyLaboratories.DolbyDigitalPlusDecoderOEM"	#Dolby sound utilities on Expertbook, Vivobook	
+		"DrivewintechTechnologyCo.DiracAudoManager"			#sound mgmt utility in Vivobook
+		"IntelligoTechnologyInc.541271065CCE8"					#suite of voice/microphone AI and Meeting utilities that Asus packages in Expertbook
     )	
 
     $UninstallPrograms = $UninstallPrograms | Where-Object { $appstoignore -notcontains $_ }
