@@ -3269,8 +3269,8 @@ if ($mcafeeinstalled -eq "true") {
         Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\McAfee.WPS" -Recurse -Force
     }
     #Interesting eough, this producese an error, but still deletes the package anyway
-    get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
-    get-appxpackage -allusers | sort-object name | format-table name, packagefullname
+    #get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
+    #get-appxpackage -allusers | sort-object name | format-table name, packagefullname
     Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
 }
 
@@ -3319,8 +3319,13 @@ $IsOOBEComplete = $false
 $hr = [Api.Kernel32]::OOBEComplete([ref] $IsOOBEComplete)
 #>			#end of block comment
 
-
-if ($IsOOBEComplete -eq 0) {
+if ($oobe.Success -and $oobe.IsOOBEComplete -and (-not $Force)) {
+		Log "OOBE is completed, bailing out without doing any configuration."
+    Add-Content -Path $DebloatTag -Value "Script run outside of OOBE - $(Get-Date) - $CurrProf - $UsrNm - Exiting"
+		Log "Intune detected, skipping removal of apps"
+		Log "$intunecomplete number of apps detected"
+}
+else {
 
 		Log "Still in OOBE, continue"
     ##Apps to remove - NOTE: Chrome has an unusual uninstall so sort on it's own
@@ -3417,11 +3422,6 @@ $xml = @"
 	}
 
 	Log " Anything else removal complete $(get-date)"	##KH
-}
-else {
-		Log "Intune detected, skipping removal of apps"
-		Log "$intunecomplete number of apps detected"
-
 }
 
 $stopUtc = [datetime]::UtcNow
