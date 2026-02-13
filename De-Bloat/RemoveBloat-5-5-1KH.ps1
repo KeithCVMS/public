@@ -1739,6 +1739,7 @@ function UninstallAppFull {
 #                                                                                                          #
 ############################################################################################################
 ##Check Manufacturer
+Log ""
 Log "Detecting Manufacturer"
 $details = Get-CimInstance -ClassName Win32_ComputerSystem
 $manufacturer = $details.Manufacturer
@@ -1854,7 +1855,8 @@ if ($manufacturer -like "*HP*") {
 
 
     ##Remove other crap
-    if (Test-Path -Path "C:\Program Files (x86)\HP\Shared" -PathType Container) { Remove-Item -Path "C:\Program Files (x86)\HP\Shared" -Recurse -Force }
+    Log ""
+		if (Test-Path -Path "C:\Program Files (x86)\HP\Shared" -PathType Container) { Remove-Item -Path "C:\Program Files (x86)\HP\Shared" -Recurse -Force }
     if (Test-Path -Path "C:\Program Files (x86)\Online Services" -PathType Container) { Remove-Item -Path "C:\Program Files (x86)\Online Services" -Recurse -Force }
     if (Test-Path -Path "C:\ProgramData\HP\TCO" -PathType Container) { Remove-Item -Path "C:\ProgramData\HP\TCO" -Recurse -Force }
     if (Test-Path -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Amazon.com.lnk" -PathType Leaf) { Remove-Item -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Amazon.com.lnk" -Force }
@@ -1910,6 +1912,7 @@ if ($manufacturer -like "*HP*") {
 	ForEach ($Key in $Keys) {
 		Remove-Item $Key.pspath.replace("Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE", "HKLM:") -Recurse -Force
 	}
+Log ""
 ##KHADD END
 
     # Main execution
