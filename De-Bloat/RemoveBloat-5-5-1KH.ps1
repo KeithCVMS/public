@@ -3274,7 +3274,14 @@ if ($mcafeeinstalled -eq "true") {
     #Interesting eough, this producese an error, but still deletes the package anyway
     #get-appxprovisionedpackage -online | sort-object displayname | format-table displayname, packagename
     #get-appxpackage -allusers | sort-object name | format-table name, packagefullname
-    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online -AllUsers
+    get-appxpackage -allusers | Where-Object Name -like "*McAfee*"
+    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*McAfee*"
+		
+		Get-AppxProvisionedPackage -Online | Where-Object DisplayName -eq "McAfeeWPSSparsePackage" | Remove-AppxProvisionedPackage -Online
+		Get-AppxPackage -Allusers | Where-Object Name -eq "McAfeeWPSSparsePackage" | Remove-AppxPackage -AllUsers
+    
+		get-appxpackage -Allusers | Where-Object Name -like "*McAfee*"
+    Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*McAfee*"
 }
 
 
